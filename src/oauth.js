@@ -44,18 +44,39 @@ function assertAllowedRedirectUri(uri) {
 }
 
 class RegisteredClientsStore {
-  constructor() {
-    this.clients = new Map();
+  constructor(issuerUrl) {
+    this.issuerUrl = issuerUrl;
   }
 
   async getClient(clientId) {
-    return this.clients.get(clientId);
+    try {
+      const payload = await decryptPayload(clientId, {
+        issuer: this.issuerUrl.href,
+        audience: "onlyflora-oauth-client",
+      });
+      const client = payload.client;
+      if (!client || typeof client !== "object" || Array.isArray(client)) {
+        return undefined;
+      }
+      return { ...client, client_id: clientId };
+    } catch {
+      return undefined;
+    }
   }
 
   async registerClient(client) {
     client.redirect_uris.forEach(assertAllowedRedirectUri);
-    this.clients.set(client.client_id, client);
-    return client;
+    const { client_id: _temporaryClientId, ...storedClient } = client;
+    const clientId = await encryptPayload(
+      { client: storedClient },
+      {
+        issuer: this.issuerUrl.href,
+        audience: "onlyflora-oauth-client",
+        subject: "registered-client",
+        expiresIn: "3650d",
+      }
+    );
+    return { ...storedClient, client_id: clientId };
   }
 }
 
@@ -63,7 +84,7 @@ export class OnlyFloraOAuthProvider {
   constructor({ issuerUrl, resourceUrl }) {
     this.issuerUrl = issuerUrl;
     this.resourceUrl = resourceUrl;
-    this.clientsStore = new RegisteredClientsStore();
+    this.clientsStore = new RegisteredClientsStore(issuerUrl);
     this.transactions = new Map();
     this.codes = new Map();
   }

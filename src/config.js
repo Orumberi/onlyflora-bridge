@@ -33,7 +33,7 @@ export const config = Object.freeze({
   authSecret,
   webasyst: {
     accountUrl: trimTrailingSlash(
-      required("WEBASYST_ACCOUNT_URL", "https://flora.webasyst.cloud")
+      required("WEBASYST_ACCOUNT_URL", "https://onlyflora.ru")
     ),
     clientId: required("WEBASYST_CLIENT_ID", "onlyflora-bridge"),
     clientName: required("WEBASYST_CLIENT_NAME", "OnlyFlora Bridge"),

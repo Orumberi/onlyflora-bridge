@@ -51,3 +51,38 @@ test("WebasystClient blocks methods outside the Shop-Script allowlist", async ()
 
   await assert.rejects(() => client.call("site.theme.write"), /Blocked Webasyst method/);
 });
+
+test("WebasystClient uploads a product image as authenticated multipart data", async () => {
+  let captured;
+  const client = new WebasystClient({
+    accessToken: "test-token",
+    accountUrl: "https://example.webasyst.cloud",
+    fetchImpl: async (url, options) => {
+      captured = { url: String(url), options };
+      return new Response(JSON.stringify({ id: 77, product_id: 42 }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    },
+  });
+
+  const result = await client.uploadProductImage(
+    42,
+    {
+      buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+      filename: "garden.png",
+      mimeType: "image/png",
+    },
+    "Сад после благоустройства"
+  );
+
+  assert.equal(result.id, 77);
+  assert.match(captured.url, /shop\.product\.images\.add/);
+  assert.match(captured.url, /product_id=42/);
+  assert.equal(captured.options.headers.Authorization, "Bearer test-token");
+  assert.equal(captured.options.headers["Content-Type"], undefined);
+  assert.ok(captured.options.body instanceof FormData);
+  assert.equal(captured.options.body.get("product_id"), "42");
+  assert.equal(captured.options.body.get("description"), "Сад после благоустройства");
+  assert.equal(captured.options.body.get("file").name, "garden.png");
+});

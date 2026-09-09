@@ -112,8 +112,73 @@ export class WebasystClient {
     }
   }
 
+  async callMultipart(method, { query = {}, fields = {}, file } = {}) {
+    if (!/^shop\.[a-zA-Z0-9_.]+$/.test(method)) {
+      throw new Error(`Blocked Webasyst method: ${method}`);
+    }
+    if (!file?.buffer || !file?.filename || !file?.mimeType) {
+      throw new Error("A validated image file is required");
+    }
+
+    const url = new URL(`${this.accountUrl}/api.php/${method}`);
+    Object.entries({ ...query, format: "json" }).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
+    });
+
+    const form = new FormData();
+    Object.entries(fields).forEach(([key, value]) => appendFormValue(form, key, value));
+    form.append("file", new Blob([file.buffer], { type: file.mimeType }), file.filename);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+    try {
+      const response = await this.fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          Accept: "application/json",
+        },
+        body: form,
+        signal: controller.signal,
+      });
+
+      const text = await response.text();
+      let data;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        throw new WebasystApiError("Webasyst returned a non-JSON response", {
+          status: response.status,
+        });
+      }
+
+      if (!response.ok || data?.error) {
+        throw new WebasystApiError(
+          data?.error_description || data?.error || `Webasyst HTTP ${response.status}`,
+          {
+            status: response.status,
+            code: data?.error,
+            description: data?.error_description,
+          }
+        );
+      }
+      return data;
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        throw new WebasystApiError("Webasyst request timed out");
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
   getCategoryTree() {
     return this.call("shop.category.getTree");
+  }
+
+  getCategory(id) {
+    return this.call("shop.category.getInfo", { query: { id } });
   }
 
   getProduct(id) {
@@ -176,6 +241,17 @@ export class WebasystClient {
       httpMethod: "POST",
       query: { product_id: productId },
       body: input,
+    });
+  }
+
+  uploadProductImage(productId, file, description) {
+    return this.callMultipart("shop.product.images.add", {
+      query: { product_id: productId },
+      fields: {
+        product_id: productId,
+        description,
+      },
+      file,
     });
   }
 }

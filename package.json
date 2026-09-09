@@ -1,6 +1,6 @@
 {
   "name": "onlyflora-bridge",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "A narrow, authenticated MCP bridge between ChatGPT/Codex and the OnlyFlora Webasyst catalog.",
   "type": "module",
@@ -11,7 +11,7 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "test": "node --test",
-    "check": "node --check src/server.js && node --check src/mcp.js && node --check src/oauth.js && node --check src/webasyst.js"
+    "check": "node --check src/server.js && node --check src/mcp.js && node --check src/oauth.js && node --check src/webasyst.js && node --check src/images.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",

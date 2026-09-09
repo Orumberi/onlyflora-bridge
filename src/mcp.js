@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 import { landscapingBlueprint } from "./blueprint.js";
+import { decodeImageInput } from "./images.js";
 import { WebasystClient } from "./webasyst.js";
 
 const readSecurity = [{ type: "oauth2", scopes: ["catalog.read"] }];
@@ -54,10 +55,10 @@ function register(server, name, definition, handler) {
 
 export function createOnlyFloraMcpServer() {
   const server = new McpServer(
-    { name: "onlyflora-webasyst", version: "0.1.0" },
+    { name: "onlyflora-webasyst", version: "0.2.0" },
     {
       instructions:
-        "Inspect records before changing them. Use IDs returned by read tools. Never create duplicates. Writes affect the OnlyFlora Webasyst catalog; theme files are outside the standard API and are not exposed here.",
+        "Inspect records before changing them. Use IDs returned by read tools. Never create duplicates. Writes affect the OnlyFlora Webasyst catalog. Product image upload is supported; theme files and native category-thumbnail upload are outside the standard OAuth API.",
     }
   );
 
@@ -90,6 +91,23 @@ export function createOnlyFloraMcpServer() {
     async (_input, extra) => {
       const result = await clientFromExtra(extra, "catalog.read").getCategoryTree();
       return success(result, "Loaded the current Webasyst category tree.");
+    }
+  );
+
+  register(
+    server,
+    "get_category",
+    {
+      title: "Get Webasyst category",
+      description: "Inspect one Shop-Script category, including its native thumbnail fields, by ID.",
+      inputSchema: { category_id: positiveId },
+      outputSchema: resultSchema,
+      securitySchemes: readSecurity,
+      annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+    },
+    async ({ category_id }, extra) => {
+      const result = await clientFromExtra(extra, "catalog.read").getCategory(category_id);
+      return success(result, `Loaded category ${category_id}.`);
     }
   );
 
@@ -331,6 +349,37 @@ export function createOnlyFloraMcpServer() {
     async ({ product_id, ...input }, extra) => {
       const result = await clientFromExtra(extra, "catalog.write").addSku(product_id, input);
       return success(result, `Added a new SKU to product ${product_id}.`);
+    }
+  );
+
+  register(
+    server,
+    "upload_product_image",
+    {
+      title: "Upload Webasyst product image",
+      description:
+        "Upload one validated JPEG, PNG, GIF, or WebP image (maximum 5 MB) to an inspected product. Pass raw base64 or a data URL.",
+      inputSchema: {
+        product_id: positiveId,
+        image_base64: z.string().min(4).max(7_100_000),
+        filename: z.string().min(1).max(255).optional(),
+        mime_type: z
+          .enum(["image/jpeg", "image/png", "image/gif", "image/webp"])
+          .optional(),
+        description: z.string().max(1000).optional(),
+      },
+      outputSchema: resultSchema,
+      securitySchemes: writeSecurity,
+      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+    },
+    async ({ product_id, image_base64, filename, mime_type, description }, extra) => {
+      const file = decodeImageInput(image_base64, { filename, mimeType: mime_type });
+      const result = await clientFromExtra(extra, "catalog.write").uploadProductImage(
+        product_id,
+        file,
+        description
+      );
+      return success(result, `Uploaded an image to product ${product_id}.`);
     }
   );
 

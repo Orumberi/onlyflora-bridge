@@ -2,6 +2,31 @@ import { config } from "./config.js";
 
 const DEFAULT_TIMEOUT_MS = 20_000;
 
+const ALLOWED_METHODS = new Set([
+  "shop.category.getTree",
+  "shop.category.getInfo",
+  "shop.product.getInfo",
+  "shop.product.search",
+  "shop.category.add",
+  "shop.category.update",
+  "shop.product.add",
+  "shop.product.update",
+  "shop.product.addToCategory",
+  "shop.product.skus.add",
+  "shop.product.images.add",
+  "site.domain.getList",
+  "site.page.getList",
+  "site.page.getInfo",
+  "site.page.add",
+  "site.page.update",
+]);
+
+function assertAllowedMethod(method) {
+  if (!ALLOWED_METHODS.has(method)) {
+    throw new Error(`Blocked Webasyst method: ${method}`);
+  }
+}
+
 function appendFormValue(form, key, value) {
   if (value === undefined || value === null) return;
 
@@ -54,9 +79,7 @@ export class WebasystClient {
   }
 
   async call(method, { httpMethod = "GET", query = {}, body = {} } = {}) {
-    if (!/^shop\.[a-zA-Z0-9_.]+$/.test(method)) {
-      throw new Error(`Blocked Webasyst method: ${method}`);
-    }
+    assertAllowedMethod(method);
 
     const url = new URL(`${this.accountUrl}/api.php/${method}`);
     Object.entries({ ...query, format: "json" }).forEach(([key, value]) => {
@@ -113,8 +136,9 @@ export class WebasystClient {
   }
 
   async callMultipart(method, { query = {}, fields = {}, file } = {}) {
-    if (!/^shop\.[a-zA-Z0-9_.]+$/.test(method)) {
-      throw new Error(`Blocked Webasyst method: ${method}`);
+    assertAllowedMethod(method);
+    if (method !== "shop.product.images.add") {
+      throw new Error(`Blocked multipart Webasyst method: ${method}`);
     }
     if (!file?.buffer || !file?.filename || !file?.mimeType) {
       throw new Error("A validated image file is required");
@@ -252,6 +276,41 @@ export class WebasystClient {
         description,
       },
       file,
+    });
+  }
+
+  getSiteDomains() {
+    return this.call("site.domain.getList");
+  }
+
+  getSitePages(
+    domainId,
+    { route, includeContent = false, includeParams = true, tree = true } = {}
+  ) {
+    return this.call("site.page.getList", {
+      query: {
+        domain_id: domainId,
+        route,
+        content: includeContent ? 1 : 0,
+        params: includeParams ? 1 : 0,
+        tree: tree ? 1 : 0,
+      },
+    });
+  }
+
+  getSitePage(id) {
+    return this.call("site.page.getInfo", { query: { id } });
+  }
+
+  createSitePage(input) {
+    return this.call("site.page.add", { httpMethod: "POST", body: input });
+  }
+
+  updateSitePage(id, input) {
+    return this.call("site.page.update", {
+      httpMethod: "POST",
+      query: { id },
+      body: input,
     });
   }
 }

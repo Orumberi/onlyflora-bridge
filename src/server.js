@@ -31,7 +31,7 @@ const oauthProvider = new OnlyFloraOAuthProvider({
 });
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "onlyflora-bridge", version: "0.2.0" });
+  res.json({ ok: true, service: "onlyflora-bridge", version: "0.3.0" });
 });
 
 app.get("/", (_req, res) => {
@@ -62,8 +62,8 @@ app.use(
     issuerUrl: baseUrl,
     resourceServerUrl: resourceUrl,
     serviceDocumentationUrl: new URL("/", baseUrl),
-    resourceName: "OnlyFlora Webasyst catalog",
-    scopesSupported: ["catalog.read", "catalog.write"],
+    resourceName: "OnlyFlora Webasyst site and catalog",
+    scopesSupported: ["catalog.read", "catalog.write", "site.read", "site.write"],
     clientRegistrationOptions: {
       clientSecretExpirySeconds: 0,
       rateLimit: { windowMs: 60 * 60 * 1000, max: 20 },

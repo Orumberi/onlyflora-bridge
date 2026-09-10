@@ -42,7 +42,7 @@ test("WebasystClient sends access token in Authorization header", async () => {
   assert.match(captured.options.body, /parent_id=7/);
 });
 
-test("WebasystClient blocks methods outside the Shop-Script allowlist", async () => {
+test("WebasystClient blocks methods outside the explicit allowlist", async () => {
   const client = new WebasystClient({
     accessToken: "test-token",
     accountUrl: "https://example.webasyst.cloud",
@@ -50,6 +50,64 @@ test("WebasystClient blocks methods outside the Shop-Script allowlist", async ()
   });
 
   await assert.rejects(() => client.call("site.theme.write"), /Blocked Webasyst method/);
+});
+
+test("WebasystClient lists Site pages with explicit compact flags", async () => {
+  let captured;
+  const client = new WebasystClient({
+    accessToken: "test-token",
+    accountUrl: "https://example.webasyst.cloud",
+    fetchImpl: async (url, options) => {
+      captured = { url: String(url), options };
+      return new Response(JSON.stringify([{ id: 12, name: "О компании" }]), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    },
+  });
+
+  const result = await client.getSitePages(3, {
+    includeContent: true,
+    includeParams: true,
+    tree: false,
+  });
+
+  assert.equal(result[0].id, 12);
+  assert.match(captured.url, /api\.php\/site\.page\.getList/);
+  assert.match(captured.url, /domain_id=3/);
+  assert.match(captured.url, /content=1/);
+  assert.match(captured.url, /params=1/);
+  assert.match(captured.url, /tree=0/);
+  assert.equal(captured.options.headers.Authorization, "Bearer test-token");
+});
+
+test("WebasystClient updates only supplied Site page fields", async () => {
+  let captured;
+  const client = new WebasystClient({
+    accessToken: "test-token",
+    accountUrl: "https://example.webasyst.cloud",
+    fetchImpl: async (url, options) => {
+      captured = { url: String(url), options };
+      return new Response(JSON.stringify({ id: 12, status: 1 }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    },
+  });
+
+  const result = await client.updateSitePage(12, {
+    title: "Политика конфиденциальности — OnlyFlora",
+    content: "<h1>Политика конфиденциальности</h1>",
+    params: { description: "Правила обработки персональных данных" },
+  });
+
+  assert.equal(result.id, 12);
+  assert.match(captured.url, /api\.php\/site\.page\.update/);
+  assert.match(captured.url, /id=12/);
+  assert.match(captured.options.body, /title=/);
+  assert.match(captured.options.body, /content=/);
+  assert.match(captured.options.body, /params%5Bdescription%5D=/);
+  assert.equal(captured.options.headers.Authorization, "Bearer test-token");
 });
 
 test("WebasystClient uploads a product image as authenticated multipart data", async () => {

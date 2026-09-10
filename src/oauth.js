@@ -226,10 +226,14 @@ export class OnlyFloraOAuthProvider {
     }
 
     this.codes.delete(authorizationCode);
-    const scopes = codeData.scopes.filter((scope) =>
-      ["catalog.read", "catalog.write"].includes(scope)
-    );
-    const effectiveScopes = scopes.length ? scopes : ["catalog.read", "catalog.write"];
+    const supportedScopes = [
+      "catalog.read",
+      "catalog.write",
+      "site.read",
+      "site.write",
+    ];
+    const scopes = codeData.scopes.filter((scope) => supportedScopes.includes(scope));
+    const effectiveScopes = scopes.length ? scopes : supportedScopes;
     const accessToken = await encryptPayload(
       {
         clientId: client.client_id,

@@ -7,6 +7,8 @@ import { WebasystClient } from "./webasyst.js";
 
 const readSecurity = [{ type: "oauth2", scopes: ["catalog.read"] }];
 const writeSecurity = [{ type: "oauth2", scopes: ["catalog.write"] }];
+const siteReadSecurity = [{ type: "oauth2", scopes: ["site.read"] }];
+const siteWriteSecurity = [{ type: "oauth2", scopes: ["site.write"] }];
 
 const commonText = z.string().max(200_000);
 const slug = z
@@ -16,6 +18,15 @@ const slug = z
 const positiveId = z.coerce.number().int().positive();
 const statusCategory = z.union([z.literal(0), z.literal(1)]);
 const statusProduct = z.union([z.literal(-1), z.literal(0), z.literal(1)]);
+const pageParams = z.record(z.string(), z.string().max(20_000));
+const relativePageUrl = z
+  .string()
+  .min(1)
+  .max(1024)
+  .refine(
+    (value) => !/^[a-z][a-z0-9+.-]*:\/\//i.test(value) && !value.startsWith("//"),
+    "Use a relative page URL, not an absolute URL"
+  );
 const resultSchema = { result: z.unknown() };
 
 function clientFromExtra(extra, requiredScope) {
@@ -55,10 +66,130 @@ function register(server, name, definition, handler) {
 
 export function createOnlyFloraMcpServer() {
   const server = new McpServer(
-    { name: "onlyflora-webasyst", version: "0.2.0" },
+    { name: "onlyflora-webasyst", version: "0.3.0" },
     {
       instructions:
-        "Inspect records before changing them. Use IDs returned by read tools. Never create duplicates. Writes affect the OnlyFlora Webasyst catalog. Product image upload is supported; theme files and native category-thumbnail upload are outside the standard OAuth API.",
+        "Inspect records before changing them. Use IDs returned by read tools. Never create duplicates. Writes affect the OnlyFlora Webasyst catalog and Site pages. Product image upload is supported; theme files and native category-thumbnail upload are outside the standard OAuth API. Before updating a page, always load it with get_site_page and preserve fields that were not requested to change.",
+    }
+  );
+
+  register(
+    server,
+    "list_site_domains",
+    {
+      title: "List Webasyst sites",
+      description:
+        "List Webasyst Site domains and their IDs before reading or creating pages.",
+      inputSchema: {},
+      outputSchema: resultSchema,
+      securitySchemes: siteReadSecurity,
+      annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+    },
+    async (_input, extra) => {
+      const result = await clientFromExtra(extra, "site.read").getSiteDomains();
+      return success(result, "Loaded the Webasyst site domains.");
+    }
+  );
+
+  register(
+    server,
+    "list_site_pages",
+    {
+      title: "List Webasyst site pages",
+      description:
+        "List pages for one verified Webasyst Site domain. Content is omitted by default; request it only when needed.",
+      inputSchema: {
+        domain_id: positiveId,
+        route: z.string().max(1024).optional(),
+        include_content: z.boolean().default(false),
+        include_params: z.boolean().default(true),
+        tree: z.boolean().default(true),
+      },
+      outputSchema: resultSchema,
+      securitySchemes: siteReadSecurity,
+      annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+    },
+    async ({ domain_id, route, include_content, include_params, tree }, extra) => {
+      const result = await clientFromExtra(extra, "site.read").getSitePages(domain_id, {
+        route,
+        includeContent: include_content,
+        includeParams: include_params,
+        tree,
+      });
+      return success(result, `Loaded pages for site domain ${domain_id}.`);
+    }
+  );
+
+  register(
+    server,
+    "get_site_page",
+    {
+      title: "Get Webasyst site page",
+      description:
+        "Load one complete Site page by ID before changing it, including its current HTML and parameters.",
+      inputSchema: { page_id: positiveId },
+      outputSchema: resultSchema,
+      securitySchemes: siteReadSecurity,
+      annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+    },
+    async ({ page_id }, extra) => {
+      const result = await clientFromExtra(extra, "site.read").getSitePage(page_id);
+      return success(result, `Loaded site page ${page_id}.`);
+    }
+  );
+
+  register(
+    server,
+    "create_site_page",
+    {
+      title: "Create Webasyst site page",
+      description:
+        "Create one Site page under a verified domain and optional parent. New pages default to draft.",
+      inputSchema: {
+        domain_id: positiveId,
+        name: z.string().min(1).max(255),
+        content: commonText,
+        route: z.string().max(1024).optional(),
+        title: z.string().max(255).optional(),
+        url: relativePageUrl.optional(),
+        status: statusCategory.default(0),
+        parent_id: positiveId.optional(),
+      },
+      outputSchema: resultSchema,
+      securitySchemes: siteWriteSecurity,
+      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+    },
+    async (input, extra) => {
+      const result = await clientFromExtra(extra, "site.write").createSitePage(input);
+      return success(result, `Created site page “${input.name}”.`);
+    }
+  );
+
+  register(
+    server,
+    "update_site_page",
+    {
+      title: "Update Webasyst site page",
+      description:
+        "Update selected fields of an existing Site page after loading it with get_site_page. Supplied HTML and parameters overwrite those fields; omitted fields are preserved.",
+      inputSchema: {
+        page_id: positiveId,
+        name: z.string().min(1).max(255).optional(),
+        title: z.string().max(255).optional(),
+        content: commonText.optional(),
+        status: statusCategory.optional(),
+        params: pageParams.optional(),
+      },
+      outputSchema: resultSchema,
+      securitySchemes: siteWriteSecurity,
+      annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
+    },
+    async ({ page_id, ...input }, extra) => {
+      if (!Object.keys(input).length) throw new Error("No page fields were provided");
+      const client = clientFromExtra(extra, "site.write");
+      await client.getSitePage(page_id);
+      const result = await client.updateSitePage(page_id, input);
+      return success(result, `Updated site page ${page_id}.`);
     }
   );
 

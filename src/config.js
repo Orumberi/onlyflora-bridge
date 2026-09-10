@@ -10,6 +10,15 @@ function required(name, fallback) {
   return value;
 }
 
+function webasystScope(value) {
+  const apps = String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return [...new Set([...apps, "shop", "site"])].join(",");
+}
+
 const authSecret = required(
   "AUTH_SECRET",
   process.env.NODE_ENV === "production"
@@ -37,7 +46,10 @@ export const config = Object.freeze({
     ),
     clientId: required("WEBASYST_CLIENT_ID", "onlyflora-bridge"),
     clientName: required("WEBASYST_CLIENT_NAME", "OnlyFlora Bridge"),
-    scope: required("WEBASYST_SCOPE", "shop"),
+    // Both apps are required by the bridge. Merge them with an explicitly
+    // configured scope so an older WEBASYST_SCOPE=shop deployment upgrades
+    // without a manual environment-variable edit.
+    scope: webasystScope(required("WEBASYST_SCOPE", "shop,site")),
   },
   oauthAllowedRedirectOrigins: configuredOrigins || [
     "https://chatgpt.com",

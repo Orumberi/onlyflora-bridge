@@ -67,7 +67,9 @@ function register(server, name, definition, handler) {
 export function normalizeSitePagePath(value) {
   const normalized = String(value ?? "")
     .trim()
-    .replace(/^\\/+|\\/+$/g, "");
+    .split("/")
+    .filter(Boolean)
+    .join("/");
   return normalized ? `${normalized}/` : "";
 }
 

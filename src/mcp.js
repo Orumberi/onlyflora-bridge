@@ -215,7 +215,7 @@ export function createOnlyFloraMcpServer() {
       const current = await client.getSitePage(page_id);
       const url = normalizeSitePagePath(input.url ?? current.url);
       let parentFullUrl = "";
-      if (current.parent_id) {
+      if (Number(current.parent_id) > 0) {
         const parent = await client.getSitePage(current.parent_id);
         parentFullUrl = parent.full_url;
       }

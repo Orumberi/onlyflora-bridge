@@ -64,9 +64,20 @@ function register(server, name, definition, handler) {
   });
 }
 
+export function normalizeSitePagePath(value) {
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(/^\\/+|\\/+$/g, "");
+  return normalized ? `${normalized}/` : "";
+}
+
+export function buildSitePageFullUrl(url, parentFullUrl = "") {
+  return `${normalizeSitePagePath(parentFullUrl)}${normalizeSitePagePath(url)}`;
+}
+
 export function createOnlyFloraMcpServer() {
   const server = new McpServer(
-    { name: "onlyflora-webasyst", version: "0.3.0" },
+    { name: "onlyflora-webasyst", version: "0.3.1" },
     {
       instructions:
         "Inspect records before changing them. Use IDs returned by read tools. Never create duplicates. Writes affect the OnlyFlora Webasyst catalog and Site pages. Product image upload is supported; theme files and native category-thumbnail upload are outside the standard OAuth API. Before updating a page, always load it with get_site_page and preserve fields that were not requested to change.",
@@ -151,7 +162,7 @@ export function createOnlyFloraMcpServer() {
         content: commonText,
         route: z.string().max(1024).optional(),
         title: z.string().max(255).optional(),
-        url: relativePageUrl.optional(),
+        url: relativePageUrl,
         status: statusCategory.default(0),
         parent_id: positiveId.optional(),
       },
@@ -160,7 +171,18 @@ export function createOnlyFloraMcpServer() {
       annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
     },
     async (input, extra) => {
-      const result = await clientFromExtra(extra, "site.write").createSitePage(input);
+      const client = clientFromExtra(extra, "site.write");
+      const url = normalizeSitePagePath(input.url);
+      let parentFullUrl = "";
+      if (input.parent_id) {
+        const parent = await client.getSitePage(input.parent_id);
+        parentFullUrl = parent.full_url;
+      }
+      const result = await client.createSitePage({
+        ...input,
+        url,
+        full_url: buildSitePageFullUrl(url, parentFullUrl),
+      });
       return success(result, `Created site page “${input.name}”.`);
     }
   );
@@ -176,6 +198,7 @@ export function createOnlyFloraMcpServer() {
         page_id: positiveId,
         name: z.string().min(1).max(255).optional(),
         title: z.string().max(255).optional(),
+        url: relativePageUrl.optional(),
         content: commonText.optional(),
         status: statusCategory.optional(),
         params: pageParams.optional(),
@@ -187,8 +210,18 @@ export function createOnlyFloraMcpServer() {
     async ({ page_id, ...input }, extra) => {
       if (!Object.keys(input).length) throw new Error("No page fields were provided");
       const client = clientFromExtra(extra, "site.write");
-      await client.getSitePage(page_id);
-      const result = await client.updateSitePage(page_id, input);
+      const current = await client.getSitePage(page_id);
+      const url = normalizeSitePagePath(input.url ?? current.url);
+      let parentFullUrl = "";
+      if (current.parent_id) {
+        const parent = await client.getSitePage(current.parent_id);
+        parentFullUrl = parent.full_url;
+      }
+      const result = await client.updateSitePage(page_id, {
+        ...input,
+        ...(input.url !== undefined ? { url } : {}),
+        full_url: buildSitePageFullUrl(url, parentFullUrl),
+      });
       return success(result, `Updated site page ${page_id}.`);
     }
   );

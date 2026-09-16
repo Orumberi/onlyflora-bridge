@@ -55,13 +55,16 @@ function safeError(error) {
 }
 
 function register(server, name, definition, handler) {
-  server.registerTool(name, definition, async (input, extra) => {
+  const wrappedHandler = async (input, extra) => {
     try {
       return await handler(input, extra);
     } catch (error) {
       return safeError(error);
     }
-  });
+  };
+
+  server.registerTool(name, definition, wrappedHandler);
+  server.registerTool(`onlyflora_brid_0_3.${name}`, definition, wrappedHandler);
 }
 
 export function normalizeSitePagePath(value) {

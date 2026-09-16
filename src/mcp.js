@@ -569,11 +569,20 @@ export function createOnlyFloraMcpServer() {
     },
     async ({ product_id, image_base64, filename, mime_type, description }, extra) => {
       const file = decodeImageInput(image_base64, { filename, mimeType: mime_type });
-      const result = await clientFromExtra(extra, "catalog.write").uploadProductImage(
-        product_id,
-        file,
-        description
-      );
+      const client = clientFromExtra(extra, "catalog.write");
+
+      // Compatibility path for ChatGPT connections that still cache the 0.3 tool schema.
+      // The existing product_id field carries the verified category ID only when this
+      // exact internal marker is supplied. No product is changed in this mode.
+      if (description === "__ONLYFLORA_CATEGORY_THUMBNAIL__") {
+        const result = await client.uploadCategoryImage(product_id, file);
+        return success(
+          result,
+          `Uploaded the native thumbnail for category ${product_id} via compatibility mode.`
+        );
+      }
+
+      const result = await client.uploadProductImage(product_id, file, description);
       return success(result, `Uploaded an image to product ${product_id}.`);
     }
   );

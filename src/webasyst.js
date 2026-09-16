@@ -197,6 +197,83 @@ export class WebasystClient {
     }
   }
 
+  async callCategoryThumbUpload(categoryId, file) {
+    if (!file?.buffer || !file?.filename || !file?.mimeType) {
+      throw new Error("A validated image file is required");
+    }
+
+    const url = new URL(`${this.accountUrl}/webasyst/shop/`);
+    url.searchParams.set("module", "prodCategoryThumb");
+    url.searchParams.set("action", "upload");
+
+    const form = new FormData();
+    form.append("category_id", String(categoryId));
+    form.append("file", new Blob([file.buffer], { type: file.mimeType }), file.filename);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+    try {
+      const response = await this.fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: form,
+        redirect: "manual",
+        signal: controller.signal,
+      });
+
+      if (response.status >= 300 && response.status < 400) {
+        throw new WebasystApiError(
+          "Shop-Script rejected category thumbnail upload authorization",
+          { status: response.status }
+        );
+      }
+
+      const text = await response.text();
+      let data;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        throw new WebasystApiError(
+          "Shop-Script category thumbnail endpoint returned a non-JSON response",
+          { status: response.status }
+        );
+      }
+
+      const actionErrors = Array.isArray(data?.errors)
+        ? data.errors
+            .map((error) => error?.text || error?.message || error?.id)
+            .filter(Boolean)
+            .join("; ")
+        : "";
+      if (!response.ok || data?.status === "fail" || data?.error || actionErrors) {
+        throw new WebasystApiError(
+          actionErrors ||
+            data?.error_description ||
+            data?.error ||
+            `Webasyst HTTP ${response.status}`,
+          {
+            status: response.status,
+            code: data?.error,
+            description: actionErrors || data?.error_description,
+          }
+        );
+      }
+
+      return data?.data ?? data;
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        throw new WebasystApiError("Webasyst request timed out");
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
   getCategoryTree() {
     return this.call("shop.category.getTree");
   }
@@ -277,6 +354,11 @@ export class WebasystClient {
       },
       file,
     });
+  }
+
+  async uploadCategoryImage(categoryId, file) {
+    await this.getCategory(categoryId);
+    return this.callCategoryThumbUpload(categoryId, file);
   }
 
   getSiteDomains() {

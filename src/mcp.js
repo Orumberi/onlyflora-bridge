@@ -79,10 +79,10 @@ export function buildSitePageFullUrl(url, parentFullUrl = "") {
 
 export function createOnlyFloraMcpServer() {
   const server = new McpServer(
-    { name: "onlyflora-webasyst", version: "0.3.1" },
+    { name: "onlyflora-webasyst", version: "0.4.0" },
     {
       instructions:
-        "Inspect records before changing them. Use IDs returned by read tools. Never create duplicates. Writes affect the OnlyFlora Webasyst catalog and Site pages. Product image upload is supported; theme files and native category-thumbnail upload are outside the standard OAuth API. Before updating a page, always load it with get_site_page and preserve fields that were not requested to change.",
+        "Inspect records before changing them. Use IDs returned by read tools. Never create duplicates. Writes affect the OnlyFlora Webasyst catalog and Site pages. Product images and native Shop-Script 12.3 category thumbnails are supported. Theme files remain outside the OAuth API. Before updating a page, always load it with get_site_page and preserve fields that were not requested to change.",
     }
   );
 
@@ -377,6 +377,35 @@ export function createOnlyFloraMcpServer() {
         input
       );
       return success(result, `Updated category ${category_id}.`);
+    }
+  );
+
+  register(
+    server,
+    "upload_category_image",
+    {
+      title: "Upload Webasyst category image",
+      description:
+        "Upload or replace one native Shop-Script category thumbnail after verifying the category. Accepts JPEG, PNG, GIF, or WebP up to 5 MB.",
+      inputSchema: {
+        category_id: positiveId,
+        image_base64: z.string().min(4).max(7_100_000),
+        filename: z.string().min(1).max(255).optional(),
+        mime_type: z
+          .enum(["image/jpeg", "image/png", "image/gif", "image/webp"])
+          .optional(),
+      },
+      outputSchema: resultSchema,
+      securitySchemes: writeSecurity,
+      annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
+    },
+    async ({ category_id, image_base64, filename, mime_type }, extra) => {
+      const file = decodeImageInput(image_base64, { filename, mimeType: mime_type });
+      const result = await clientFromExtra(extra, "catalog.write").uploadCategoryImage(
+        category_id,
+        file
+      );
+      return success(result, `Uploaded the native thumbnail for category ${category_id}.`);
     }
   );
 

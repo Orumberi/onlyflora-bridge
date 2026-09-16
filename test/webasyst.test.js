@@ -144,3 +144,73 @@ test("WebasystClient uploads a product image as authenticated multipart data", a
   assert.equal(captured.options.body.get("description"), "Сад после благоустройства");
   assert.equal(captured.options.body.get("file").name, "garden.png");
 });
+
+test("WebasystClient verifies a category and uploads its native thumbnail", async () => {
+  const captured = [];
+  const client = new WebasystClient({
+    accessToken: "test-token",
+    accountUrl: "https://example.webasyst.cloud",
+    fetchImpl: async (url, options) => {
+      captured.push({ url: String(url), options });
+      if (String(url).includes("shop.category.getInfo")) {
+        return new Response(JSON.stringify({ id: 49, name: "Рябины" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      return new Response(
+        JSON.stringify({ status: "ok", data: { thumb: { url192x192: "rowan.png" } } }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      );
+    },
+  });
+
+  const result = await client.uploadCategoryImage(49, {
+    buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+    filename: "rowan.png",
+    mimeType: "image/png",
+  });
+
+  assert.equal(captured.length, 2);
+  assert.match(captured[0].url, /shop\.category\.getInfo/);
+  assert.match(captured[0].url, /id=49/);
+  assert.match(captured[1].url, /\/webasyst\/shop\//);
+  assert.match(captured[1].url, /module=prodCategoryThumb/);
+  assert.match(captured[1].url, /action=upload/);
+  assert.equal(captured[1].options.headers.Authorization, "Bearer test-token");
+  assert.equal(captured[1].options.headers["X-Requested-With"], "XMLHttpRequest");
+  assert.equal(captured[1].options.redirect, "manual");
+  assert.ok(captured[1].options.body instanceof FormData);
+  assert.equal(captured[1].options.body.get("category_id"), "49");
+  assert.equal(captured[1].options.body.get("file").name, "rowan.png");
+  assert.equal(result.thumb.url192x192, "rowan.png");
+});
+
+test("WebasystClient fails closed when category thumbnail upload redirects to login", async () => {
+  const client = new WebasystClient({
+    accessToken: "test-token",
+    accountUrl: "https://example.webasyst.cloud",
+    fetchImpl: async (url) => {
+      if (String(url).includes("shop.category.getInfo")) {
+        return new Response(JSON.stringify({ id: 49, name: "Рябины" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      return new Response(null, {
+        status: 302,
+        headers: { location: "/webasyst/login/" },
+      });
+    },
+  });
+
+  await assert.rejects(
+    () =>
+      client.uploadCategoryImage(49, {
+        buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        filename: "rowan.png",
+        mimeType: "image/png",
+      }),
+    /rejected category thumbnail upload authorization/
+  );
+});

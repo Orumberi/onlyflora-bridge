@@ -1,0 +1,1006 @@
+[
+  {
+    "id": "26285",
+    "name": "Туя западная Смарагд (Smaragd)",
+    "status": "1",
+    "currency": "RUB",
+    "order_count_min": "1.000",
+    "order_count_step": "1.000",
+    "skus": [
+      {
+        "id": "60831",
+        "sku": "GM-0002",
+        "name": "Гарден Маркет · 110 см · WRB",
+        "price": "7650.0000",
+        "count": "10475.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60832",
+        "sku": "GM-0030",
+        "name": "Гарден Маркет · 130 см · C20",
+        "price": "9900.0000",
+        "count": "195.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60833",
+        "sku": "GM-0003",
+        "name": "Гарден Маркет · 130 см · WRB",
+        "price": "9900.0000",
+        "count": "13303.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60834",
+        "sku": "GM-0031",
+        "name": "Гарден Маркет · 150 см · C35",
+        "price": "11850.0000",
+        "count": "4.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60835",
+        "sku": "GM-0004",
+        "name": "Гарден Маркет · 150 см · WRB",
+        "price": "11850.0000",
+        "count": "4110.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60836",
+        "sku": "GM-0032",
+        "name": "Гарден Маркет · 170 см · C45",
+        "price": "15750.0000",
+        "count": "75.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60837",
+        "sku": "GM-0005",
+        "name": "Гарден Маркет · 170 см · WRB",
+        "price": "15750.0000",
+        "count": "1115.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60838",
+        "sku": "GM-0006",
+        "name": "Гарден Маркет · 190 см · WRB",
+        "price": "18000.0000",
+        "count": "805.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60839",
+        "sku": "GM-0007",
+        "name": "Гарден Маркет · 210 см · WRB",
+        "price": "23550.0000",
+        "count": "175.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60840",
+        "sku": "GM-0008",
+        "name": "Гарден Маркет · 235 см · WRB",
+        "price": "29700.0000",
+        "count": "210.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60841",
+        "sku": "GM-0001",
+        "name": "Гарден Маркет · 90 см · WRB",
+        "price": "5550.0000",
+        "count": "1470.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60842",
+        "sku": "IG-126112",
+        "name": "Империал Г · 100–125 см · C32",
+        "price": "8250.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60843",
+        "sku": "IG-126113",
+        "name": "Империал Г · 100–125 см · C45",
+        "price": "8250.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60844",
+        "sku": "IG-130494",
+        "name": "Империал Г · 100–125 см · WRB",
+        "price": "8250.0000",
+        "count": "469.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60845",
+        "sku": "IG-130495",
+        "name": "Империал Г · 125–150 см · WRB",
+        "price": "10650.0000",
+        "count": "414.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60846",
+        "sku": "IG-80664",
+        "name": "Империал Г · 150–175 см · C18",
+        "price": "14250.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60847",
+        "sku": "IG-130496",
+        "name": "Империал Г · 150–175 см · WRB",
+        "price": "15450.0000",
+        "count": "307.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60848",
+        "sku": "IG-126123",
+        "name": "Империал Г · 175–200 см · C35",
+        "price": "22050.0000",
+        "count": "3.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60849",
+        "sku": "IG-93874",
+        "name": "Империал Г · 175–200 см · WRB",
+        "price": "21000.0000",
+        "count": "2.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60850",
+        "sku": "IG-67799",
+        "name": "Империал Г · 180–200 см · WRB",
+        "price": "19050.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60851",
+        "sku": "IG-126128",
+        "name": "Империал Г · 200–225 см · WRB",
+        "price": "27450.0000",
+        "count": "5.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60852",
+        "sku": "IG-85513",
+        "name": "Империал Г · 200–250 см · WRB",
+        "price": "27750.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60853",
+        "sku": "IG-131753",
+        "name": "Империал Г · 225–250 см · WRB",
+        "price": "36750.0000",
+        "count": "46.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60854",
+        "sku": "IG-131777",
+        "name": "Империал Г · 250–275 см · WRB",
+        "price": "70500.0000",
+        "count": "98.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60855",
+        "sku": "IG-126138",
+        "name": "Империал Г · 275–300 см · WRB",
+        "price": "103500.0000",
+        "count": "2.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60856",
+        "sku": "IG-120236",
+        "name": "Империал Г · 300–350 см · WRB",
+        "price": "234750.0000",
+        "count": "7.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60857",
+        "sku": "IG-103325",
+        "name": "Империал Г · 350–400 см · WRB",
+        "price": "170700.0000",
+        "count": "3.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60858",
+        "sku": "IG-103329",
+        "name": "Империал Г · 400–450 см · WRB",
+        "price": "237600.0000",
+        "count": "4.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60859",
+        "sku": "IG-118193",
+        "name": "Империал Г · 40–60 см · C15",
+        "price": "7050.0000",
+        "count": "2.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60860",
+        "sku": "IG-126143",
+        "name": "Империал Г · 40–60 см · C7.5",
+        "price": "7050.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60861",
+        "sku": "IG-103331",
+        "name": "Империал Г · 450–500 см · WRB",
+        "price": "375600.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60862",
+        "sku": "IG-103335",
+        "name": "Империал Г · 500–550 см · WRB",
+        "price": "546000.0000",
+        "count": "2.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60863",
+        "sku": "IG-128664",
+        "name": "Империал Г · 60–80 см · C10",
+        "price": "7650.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60864",
+        "sku": "IG-122954",
+        "name": "Империал Г · 60–80 см · C2",
+        "price": "1950.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60865",
+        "sku": "IG-128712",
+        "name": "Империал Г · 60–80 см · C25",
+        "price": "14100.0000",
+        "count": "15.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60866",
+        "sku": "IG-128617",
+        "name": "Империал Г · 80–100 см · C15",
+        "price": "7200.0000",
+        "count": "20.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60867",
+        "sku": "IG-111291",
+        "name": "Империал Г · 80–100 см · C20",
+        "price": "8250.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60868",
+        "sku": "IG-128895",
+        "name": "Империал Г · 80–100 см · C32",
+        "price": "16800.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60869",
+        "sku": "IG-128603",
+        "name": "Империал Г · 80–100 см · C5",
+        "price": "3150.0000",
+        "count": "12.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60870",
+        "sku": "IG-131508",
+        "name": "Империал Г · 80–100 см · C7.5 · С7,5",
+        "price": "5550.0000",
+        "count": "18.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60871",
+        "sku": "IG-131287",
+        "name": "Империал Г · C18",
+        "price": "44400.0000",
+        "count": "3.000",
+        "available": "1",
+        "status": "0",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60872",
+        "sku": "KOR-0320",
+        "name": "Питомник «КОРНИ» · 100–120 см · WRB",
+        "price": "3900.0000",
+        "count": null,
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60873",
+        "sku": "KOR-0321",
+        "name": "Питомник «КОРНИ» · 120–140 см · WRB",
+        "price": "4800.0000",
+        "count": null,
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60874",
+        "sku": "KOR-0322",
+        "name": "Питомник «КОРНИ» · 140–160 см · WRB",
+        "price": "6000.0000",
+        "count": null,
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60875",
+        "sku": "KOR-0323",
+        "name": "Питомник «КОРНИ» · 160–180 см · WRB",
+        "price": "7650.0000",
+        "count": null,
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60876",
+        "sku": "KOR-0324",
+        "name": "Питомник «КОРНИ» · 180–200 см · WRB",
+        "price": "9300.0000",
+        "count": null,
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60877",
+        "sku": "KOR-0325",
+        "name": "Питомник «КОРНИ» · 200–250 см · WRB",
+        "price": "19500.0000",
+        "count": null,
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60878",
+        "sku": "KOR-0326",
+        "name": "Питомник «КОРНИ» · 250–300 см · WRB",
+        "price": "25800.0000",
+        "count": null,
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60879",
+        "sku": "KOR-0327",
+        "name": "Питомник «КОРНИ» · 300–350 см · WRB",
+        "price": "32100.0000",
+        "count": null,
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60880",
+        "sku": "KOR-0328",
+        "name": "Питомник «КОРНИ» · 80–100 см · WRB",
+        "price": "2700.0000",
+        "count": null,
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60881",
+        "sku": "VK-0971",
+        "name": "Питомник Влада Ковальчука · 020–040 см · C3",
+        "price": "1020.0000",
+        "count": "3015.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60882",
+        "sku": "VK-0968",
+        "name": "Питомник Влада Ковальчука · 160–180 см · Форма поставки",
+        "price": "8400.0000",
+        "count": "2.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60883",
+        "sku": "VK-0969",
+        "name": "Питомник Влада Ковальчука · 180–200 см · Форма поставки",
+        "price": "9750.0000",
+        "count": "0.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60884",
+        "sku": "VK-0970",
+        "name": "Питомник Влада Ковальчука · 240–260 см · Форма поставки",
+        "price": "21289.5000",
+        "count": "0.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60885",
+        "sku": "SL-1277",
+        "name": "Садовый Лабиринт · 100–125 см · WRB40",
+        "price": "6000.0000",
+        "count": "81.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60886",
+        "sku": "SL-1278",
+        "name": "Садовый Лабиринт · 125–150 см · WRB50",
+        "price": "8250.0000",
+        "count": "166.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60887",
+        "sku": "SL-1279",
+        "name": "Садовый Лабиринт · 150–175 см · WRB50",
+        "price": "11250.0000",
+        "count": "47.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60888",
+        "sku": "SL-1280",
+        "name": "Садовый Лабиринт · 175–200 см · WRB50",
+        "price": "17250.0000",
+        "count": "30.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60889",
+        "sku": "SL-1281",
+        "name": "Садовый Лабиринт · 200–250 см · WRB60",
+        "price": "22200.0000",
+        "count": "26.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60890",
+        "sku": "SL-219",
+        "name": "Садовый Лабиринт · 40–60 см · C2",
+        "price": "1170.0000",
+        "count": "1996.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60891",
+        "sku": "SL-220",
+        "name": "Садовый Лабиринт · 60–80 см · C3",
+        "price": "1275.0000",
+        "count": "146.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60892",
+        "sku": "SL-221",
+        "name": "Садовый Лабиринт · 60–80 см · C5",
+        "price": "2100.0000",
+        "count": "54.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60893",
+        "sku": "SL-222",
+        "name": "Садовый Лабиринт · 80–100 см · C45",
+        "price": "24000.0000",
+        "count": "40.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60894",
+        "sku": "SL-1282",
+        "name": "Садовый Лабиринт · 80–100 см · WRB40",
+        "price": "4350.0000",
+        "count": "6.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      }
+    ]
+  },
+  {
+    "id": "26277",
+    "name": "Туя западная 'Смарагд' форма Конус",
+    "status": "1",
+    "currency": "RUB",
+    "order_count_min": "1.000",
+    "order_count_step": "1.000",
+    "skus": [
+      {
+        "id": "60795",
+        "sku": "IG-126690",
+        "name": "Империал Г · 200–225 см · WRB",
+        "price": "168750.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60796",
+        "sku": "IG-126691",
+        "name": "Империал Г · 250–275 см · WRB",
+        "price": "365400.0000",
+        "count": "2.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60797",
+        "sku": "SL-1113",
+        "name": "Садовый Лабиринт · 250–300 см · WRB60",
+        "price": "88350.0000",
+        "count": "7.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60798",
+        "sku": "SL-1114",
+        "name": "Садовый Лабиринт · 300–350 см · WRB70",
+        "price": "105600.0000",
+        "count": "10.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      }
+    ]
+  },
+  {
+    "id": "26278",
+    "name": "Туя западная 'Смарагд' форма Куб",
+    "status": "1",
+    "currency": "RUB",
+    "order_count_min": "1.000",
+    "order_count_step": "1.000",
+    "skus": [
+      {
+        "id": "60800",
+        "sku": "SL-1115",
+        "name": "Садовый Лабиринт · 100–125 см · WRB40",
+        "price": "29550.0000",
+        "count": "12.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "60801",
+        "sku": "SL-1116",
+        "name": "Садовый Лабиринт · 80–100 см · WRB40",
+        "price": "23850.0000",
+        "count": "16.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      }
+    ]
+  },
+  {
+    "id": "26276",
+    "name": "Туя западная 'Смарагд' топиарная фигура",
+    "status": "1",
+    "currency": "RUB",
+    "order_count_min": "1.000",
+    "order_count_step": "1.000",
+    "skus": [
+      {
+        "id": "60793",
+        "sku": "SL-1283",
+        "name": "Садовый Лабиринт · 200–250 см · WRB60",
+        "price": "151500.0000",
+        "count": "4.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      }
+    ]
+  },
+  {
+    "id": "26268",
+    "name": "Туя западная 'Голден Смарагд' форма Карандаш",
+    "status": "1",
+    "currency": "RUB",
+    "order_count_min": "1.000",
+    "order_count_step": "1.000",
+    "skus": [
+      {
+        "id": "60767",
+        "sku": "SL-1110",
+        "name": "Садовый Лабиринт · 200–250 см · WRB60",
+        "price": "95250.0000",
+        "count": "1.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      }
+    ]
+  },
+  {
+    "id": "26269",
+    "name": "Туя западная 'Голден Смарагд'®",
+    "status": "1",
+    "currency": "RUB",
+    "order_count_min": "1.000",
+    "order_count_step": "1.000",
+    "skus": [
+      {
+        "id": "60769",
+        "sku": "SL-1266",
+        "name": "Садовый Лабиринт · 200–250 см · WRB60",
+        "price": "57840.0000",
+        "count": "2.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      }
+    ]
+  },
+  {
+    "id": "26204",
+    "name": "Туя Смарагд Экстра",
+    "status": "1",
+    "currency": "RUB",
+    "order_count_min": "1.000",
+    "order_count_step": "1.000",
+    "skus": [
+      {
+        "id": "60298",
+        "sku": "VEN-P0690",
+        "name": "Венев · ОКС",
+        "price": "2095.5000",
+        "count": null,
+        "available": "0",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      }
+    ]
+  },
+  {
+    "id": "18544",
+    "name": "Туя западная 'Смарагд'",
+    "status": "1",
+    "currency": "RUB",
+    "order_count_min": "1.000",
+    "order_count_step": "1.000",
+    "skus": [
+      {
+        "id": "21264",
+        "sku": "SL-220",
+        "name": "60–80 см, C3, Садовый Лабиринт",
+        "price": "1275.0000",
+        "count": "146.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "21265",
+        "sku": "SL-221",
+        "name": "60–80 см, C5, Садовый Лабиринт",
+        "price": "2100.0000",
+        "count": "54.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "21266",
+        "sku": "SL-222",
+        "name": "80–100 см, C45, Садовый Лабиринт",
+        "price": "24000.0000",
+        "count": "40.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "21271",
+        "sku": "SL-219",
+        "name": "40–60 см, C2, Садовый Лабиринт",
+        "price": "1170.0000",
+        "count": "1996.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "23132",
+        "sku": "SL-1277",
+        "name": "100–125 см, WRB40, Садовый Лабиринт",
+        "price": "6000.0000",
+        "count": "81.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "23133",
+        "sku": "SL-1278",
+        "name": "125–150 см, WRB50, Садовый Лабиринт",
+        "price": "8250.0000",
+        "count": "166.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "23134",
+        "sku": "SL-1279",
+        "name": "150–175 см, WRB50, Садовый Лабиринт",
+        "price": "11250.0000",
+        "count": "47.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "23135",
+        "sku": "SL-1280",
+        "name": "175–200 см, WRB50, Садовый Лабиринт",
+        "price": "17250.0000",
+        "count": "30.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "23136",
+        "sku": "SL-1281",
+        "name": "200–250 см, WRB60, Садовый Лабиринт",
+        "price": "22200.0000",
+        "count": "26.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      },
+      {
+        "id": "23137",
+        "sku": "SL-1282",
+        "name": "80–100 см, WRB40, Садовый Лабиринт",
+        "price": "4350.0000",
+        "count": "6.000",
+        "available": "1",
+        "status": "1",
+        "order_count_min": null,
+        "order_count_step": null
+      }
+    ]
+  }
+]

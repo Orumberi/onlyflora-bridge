@@ -11,6 +11,7 @@ import {
 import { config } from "./config.js";
 import { createOnlyFloraMcpServer } from "./mcp.js";
 import { OnlyFloraOAuthProvider } from "./oauth.js";
+import { createEgorRouter } from "../egor/router.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -21,6 +22,8 @@ app.use(
     crossOriginResourcePolicy: { policy: "same-site" },
   })
 );
+// Keep Egor's authentication/body limits/error handling ahead of the MCP parser.
+app.use("/egor", createEgorRouter());
 app.use(express.json({ limit: "8mb" }));
 
 const baseUrl = new URL(config.appBaseUrl || `http://localhost:${config.port}`);
@@ -33,6 +36,7 @@ const oauthProvider = new OnlyFloraOAuthProvider({
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "onlyflora-bridge", version: "0.3.1" });
 });
+
 
 app.get("/", (_req, res) => {
   res.type("text/plain").send(

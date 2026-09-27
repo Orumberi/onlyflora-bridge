@@ -26,9 +26,17 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
     // The assistant is framed by Only Test; CSP restricts the permitted parents.
     res.removeHeader("X-Frame-Options"); next();
   });
-  router.get("/status", (_req, res) => res.json({ ready, photoReady: ready && photoReady, preview: true }));
+  router.get("/status", (_req, res) => res.json({ ready, textReady: true, photoReady: ready && photoReady, preview: true }));
   router.use("/api", rateLimit({ windowMs: 60000, limit: 10, standardHeaders: true, legacyHeaders: false,
     message: { error: "Слишком много запросов. Попробуйте через минуту." } }));
+  router.use("/api", express.json({ limit: "8mb" }));
+  // Deterministic text parsing needs no catalog or external AI and stays useful
+  // while the read-only Shop-Script credential is being configured.
+  router.post("/api/parse", (req, res) => {
+    const text = req.body?.text;
+    if (typeof text !== "string" || !text.trim() || text.length > 10000) return res.status(400).json({ error: "Введите список до 10 000 символов." });
+    res.json(parseText(text));
+  });
   router.use("/api", (req, res, next) => {
     if (!ready) return res.status(503).json({ error: "Тестовый помощник ещё не подключён к каталогу." });
     const supplied = String(req.headers.authorization || "").replace(/^Bearer /, "");
@@ -36,7 +44,6 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
     if (!timingSafeEqual(digest(supplied), digest(previewKey))) return res.status(401).json({ error: "Нужен код доступа к тестовой версии." });
     next();
   });
-  router.use("/api", express.json({ limit: "8mb" }));
   router.use("/api", (req, res, next) => {
     if (busy) return res.status(429).json({ error: "Егор завершает другой подбор. Повторите чуть позже." });
     busy = true;

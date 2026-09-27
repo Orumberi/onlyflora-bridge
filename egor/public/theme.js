@@ -13,6 +13,7 @@
   const missingImagePattern = /(?:dummy|no[-_ ]?image|no[-_ ]?photo|nophoto|placeholder|default[-_ ]?(?:product|image))/i;
   const productContextSelector = [
     ".product-card",
+    ".product",
     ".product-item",
     ".product-list-item",
     ".products li",
@@ -29,6 +30,8 @@
   function useProductPlaceholder(image) {
     if (!isProductImage(image) || image.dataset.ofFallbackApplied === "1") return;
     image.dataset.ofFallbackApplied = "1";
+    image.removeAttribute("data-src");
+    image.removeAttribute("data-srcset");
     image.removeAttribute("srcset");
     image.removeAttribute("sizes");
     image.src = productPlaceholder;
@@ -41,8 +44,11 @@
       ? [root]
       : [...(root.querySelectorAll?.("img") || [])];
     for (const image of images) {
-      const source = image.getAttribute("src") || image.getAttribute("data-src") || "";
-      if (isProductImage(image) && (!source || missingImagePattern.test(source))) {
+      const source = ["src", "data-src", "srcset", "data-srcset"]
+        .map(attribute => image.getAttribute(attribute) || "")
+        .join(" ");
+      const transparentLoader = /^data:image\/gif;base64,R0lGODlhAQABA/i.test(image.getAttribute("src") || "");
+      if (isProductImage(image) && (!source.trim() || transparentLoader || missingImagePattern.test(source))) {
         useProductPlaceholder(image);
       }
     }

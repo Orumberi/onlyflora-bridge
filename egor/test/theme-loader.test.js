@@ -80,5 +80,8 @@ test("onlytest product cards use the plant placeholder for missing or broken pho
   assert.match(theme, /document\.addEventListener\("error"/);
   assert.match(theme, /new MutationObserver/);
   assert.match(theme, /missingImagePattern/);
+  assert.match(theme, /data-srcset/);
+  assert.match(theme, /R0lGODlhAQABA/);
+  assert.match(theme, /"\.product"/);
   assert.match(css, /\.of-product-image-fallback/);
 });

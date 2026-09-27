@@ -125,6 +125,9 @@ test("disabled preview cannot call upstream services", async t => {
   const server = app.listen(0, "127.0.0.1"); await new Promise(resolve => server.on("listening", resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
   const base = `http://127.0.0.1:${server.address().port}/egor`;
-  assert.equal((await (await fetch(base + "/status")).json()).ready, false);
+  const status = await (await fetch(base + "/status")).json();
+  assert.equal(status.ready, false); assert.equal(status.textReady, true);
+  const parsed = await fetch(base + "/api/parse", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: "Дерен белый — 50 шт." }) });
+  assert.equal(parsed.status, 200); assert.equal((await parsed.json()).lines[0].quantity, 50);
   assert.equal((await fetch(base + "/api/extract", { method: "POST" })).status, 503);
 });

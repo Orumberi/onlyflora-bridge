@@ -1,5 +1,5 @@
 const $ = id => document.getElementById(id);
-let accessKey = "", lastPlan = null, inputMode = "photo";
+let accessKey = "", lastPlan = null, inputMode = "photo", catalogReady = false;
 const money = value => new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" }).format(value / 100);
 function notice(message, error = false) { $("notice").textContent = message; $("notice").classList.toggle("error", error); }
 function node(tag, text, className) { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (className) e.className = className; return e; }
@@ -8,6 +8,12 @@ async function api(path, body) {
   const result = await response.json();
   if (response.status === 401) { accessKey = ""; $("access").hidden = false; $("input-section").hidden = true; $("review").hidden = true; }
   if (!response.ok) throw new Error(result.error || "Не удалось выполнить запрос"); return result;
+}
+async function publicApi(path, body) {
+  const response = await fetch(`./api/${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(20000) });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || "Не удалось выполнить запрос");
+  return result;
 }
 async function run(button, work) { button.disabled = true; try { await work(); } catch (e) { notice(e.name === "TimeoutError" ? "Подбор занял слишком много времени. Попробуйте меньше строк." : e.message, true); } finally { button.disabled = false; } }
 function resetResult() { lastPlan = null; $("result").hidden = true; $("confirmed").checked = false; }
@@ -46,7 +52,7 @@ $("extract").addEventListener("click", () => run($("extract"), async () => {
     if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size > 5 * 1024 * 1024) throw new Error("Нужно фото JPEG, PNG или WebP до 5 МБ.");
     body = { image: await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => reject(new Error("Не удалось прочитать файл.")); reader.readAsDataURL(file); }) };
   }
-  showLines(await api("extract", body));
+  showLines(file ? await api("extract", body) : await publicApi("parse", body));
 }));
 $("plan").addEventListener("click", () => run($("plan"), async () => {
   if (!$("confirmed").checked) throw new Error("Сначала проверьте список и поставьте галочку подтверждения.");
@@ -99,8 +105,21 @@ $("download").addEventListener("click", () => {
   const csv = rows.map(row => row.map(value => { let text = String(value); if (/^[=+@\-\t\r]/.test(text)) text = "'" + text; return '"' + text.replaceAll('"', '""') + '"'; }).join(";")).join("\r\n");
   const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" })); const a = node("a"); a.href = url; a.download = "onlyflora-podbor.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
-fetch("./status").then(r => r.json()).then(status => {
-  if (!status.ready) return notice("Помощник готовится к тестированию. Подключение к каталогу ещё не настроено.", true);
+fetch("./status", { signal: AbortSignal.timeout(10000) }).then(r => r.json()).then(status => {
+  catalogReady = Boolean(status.ready);
+  if (!catalogReady) {
+    $("input-section").hidden = false;
+    $("photo").disabled = true;
+    $("plan").disabled = true;
+    setInputMode("text");
+    return notice("Текстовый список уже работает. Подбор по остаткам и фото появится после подключения серверного доступа к каталогу.");
+  }
   $("access").hidden = false; $("photo").disabled = !status.photoReady;
   notice(status.photoReady ? "Тестовая версия помощника." : "Пока доступен список текстом. Распознавание фото ещё не подключено.");
-}).catch(() => notice("Не удалось подключиться к помощнику. Попробуйте позже.", true));
+}).catch(() => {
+  $("input-section").hidden = false;
+  $("photo").disabled = true;
+  $("plan").disabled = true;
+  setInputMode("text");
+  notice("Связь с помощником не установлена. Текст можно ввести и проверить; повторите подбор позже.", true);
+});

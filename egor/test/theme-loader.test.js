@@ -52,3 +52,33 @@ test("modern navigation keeps every primary OnlyFlora section", async () => {
     assert.match(theme, new RegExp(`>${section}<`));
   }
 });
+
+test("modern homepage runs on the Webasyst Site preview route", async () => {
+  const theme = await readFile("egor/public/theme.js", "utf8");
+  assert.match(theme, /new Set\(\["\/", "\/site"\]\)/);
+  assert.match(theme, /homePaths\.has\(path\)/);
+});
+
+test("modern homepage uses Shop-Script search, fixed category assets and legal links", async () => {
+  const theme = await readFile("egor/public/theme.js", "utf8");
+  assert.match(theme, /const searchAction = "\/search\/"/);
+  assert.match(theme, /name=\"\$\{escapeHtml\(searchName\)\}\"/);
+  for (const asset of ["deciduous-trees.png", "conifers.png", "shrubs.png", "perennials.png", "ornamental-grasses.png"]) {
+    assert.match(theme, new RegExp(asset.replace(".", "\\.")));
+  }
+  for (const page of ["personal-data-policy", "personal-data-consent", "cookie-policy", "advertising-consent"]) {
+    assert.match(theme, new RegExp(`/site/legal/${page}/`));
+  }
+});
+
+test("onlytest product cards use the plant placeholder for missing or broken photos", async () => {
+  const theme = await readFile("egor/public/theme.js", "utf8");
+  const css = await readFile("egor/public/theme.css", "utf8");
+  const fallbackSetup = theme.indexOf("assets/product-card-placeholder.png");
+  const homepageGuard = theme.indexOf("if (!homePaths.has(path)) return");
+  assert.ok(fallbackSetup >= 0 && fallbackSetup < homepageGuard, "fallback must run on every Only Test catalog page");
+  assert.match(theme, /document\.addEventListener\("error"/);
+  assert.match(theme, /new MutationObserver/);
+  assert.match(theme, /missingImagePattern/);
+  assert.match(css, /\.of-product-image-fallback/);
+});

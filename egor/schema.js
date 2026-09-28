@@ -20,16 +20,31 @@ export const extractionSchema = z.object({
 
 export function parseText(text) {
   return { lines: text.split(/\n|;/).map(s => s.trim()).filter(Boolean).slice(0, 30).map(raw => {
-    const height = raw.match(/\d+(?:[.,]\d+)?\s*[-–—]\s*\d+(?:[.,]\d+)?\s*(?:см|cm|м|m)?/i)
-      || raw.match(/\d+(?:[.,]\d+)?\s*(?:см|cm|м|m)(?=\s|$)/i);
-    const container = raw.match(/\b(?:WRB|RB|C|P)\s*\d+(?:[.,]\d+)?\b/i);
     let name = raw;
+    // An explicit trailing unit is the safest quantity marker. Extract it
+    // before dimensions so decimals such as "2,5 м" and trunk girth never
+    // become the requested number of plants.
+    const explicitQty = name.match(/(?:^|\s)(?:[—–-]\s*)?(\d+)\s*(?:шт\.?|штук)\s*$/i);
+    let quantity = explicitQty ? Number(explicitQty[1]) : null;
+    if (explicitQty) name = name.slice(0, explicitQty.index).trim();
+
+    const height = name.match(/\d+(?:[.,]\d+)?\s*(?:[-–—]\s*\d+(?:[.,]\d+)?\s*)?(?:см|cm|м|m)(?=\s|[,;—–-]|$)/i);
+    const container = name.match(/\b(?:WRB|RB|C|P)\s*\d+(?:[.,]\d+)?\b/i);
     if (height) name = name.replace(height[0], " ");
     if (container) name = name.replace(container[0], " ");
-    const qty = name.match(/\s+(?:[—–-]\s*)?(\d+)\s*(?:шт\.?|штук)?\s*$/i);
-    if (qty) name = name.slice(0, qty.index).trim();
-    return { name: name.replace(/[,\s]+$/g, "").trim(), quantity: qty ? Number(qty[1]) : null,
-      height: height?.[0].trim() || "", container: container?.[0] || "", uncertain: !qty,
-      note: !qty ? "Укажите количество" : "" };
+
+    // Girth is useful product detail, but the current catalogue matcher has
+    // no separate girth field. Do not corrupt the plant name with it.
+    name = name.replace(/[,\s]*(?:обхват)(?:\s+ствола)?\s*\d+(?:[.,]\d+)?(?:\s*[-–—]\s*\d+(?:[.,]\d+)?)?\s*(?:см|cm)?\s*[-–—]?\s*$/i, " ");
+
+    // Preserve the established shorthand "Название — 25" only after all
+    // physical measurements have been removed.
+    if (quantity === null) {
+      const bareQty = name.match(/\s+[—–-]\s*(\d+)\s*$/);
+      if (bareQty) { quantity = Number(bareQty[1]); name = name.slice(0, bareQty.index).trim(); }
+    }
+    return { name: name.replace(/[,;\-–—\s]+$/g, "").trim(), quantity,
+      height: height?.[0].trim() || "", container: container?.[0] || "", uncertain: quantity === null,
+      note: quantity === null ? "Укажите количество" : "" };
   }), warnings: text.split(/\n|;/).filter(s => s.trim()).length > 30 ? ["Обработаны первые 30 строк. Остальные отправьте отдельно."] : [] };
 }

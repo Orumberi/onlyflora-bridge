@@ -1,67 +1,144 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>DekSad — флористика, свадьбы и оформление мероприятий</title>
-  <meta name="description" content="DekSad — флористика, свадебное оформление, декор и организация мероприятий. Создаём атмосферу, в которой хочется остаться.">
-  <meta name="theme-color" content="#071a13">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="DekSad — Event Organization & Floral Design">
-  <meta property="og:description" content="Мы создаём атмосферу, в которой хочется остаться.">
-  <meta property="og:url" content="https://deksad.ru/">
-  <link rel="canonical" href="https://deksad.ru/">
-  <link rel="icon" href="assets/deksad-logo.svg?v=20260928-5" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=20260928-5">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DekSad — флористика, декор и организация событий</title>
+<meta name="description" content="DekSad — флористика, свадебное оформление, декор и организация мероприятий. Каталог организаторов и декораторов.">
+<meta name="theme-color" content="#061812">
+<link rel="canonical" href="https://deksad.ru/">
+<link rel="icon" href="assets/deksad-logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="site-header" id="top">
-    <a class="brand" href="#top" aria-label="DekSad — на главную"><img src="assets/deksad-logo.svg?v=20260928-5" alt="" width="52" height="52" style="border-radius:50%;object-fit:cover"><span>DekSad</span></a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Открыть меню"><span></span><span></span></button>
-    <nav class="main-nav" id="main-nav" aria-label="Основная навигация">
-      <a href="#weddings">Свадьбы</a><a href="#floristry">Флористика</a><a href="#decor">Декор</a><a href="#events">Мероприятия</a><a href="#portfolio">Портфолио</a><a href="#about">О нас</a><a class="nav-cta" href="#contact">Связаться</a>
-    </nav>
-  </header>
-  <main>
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-orb hero-orb-one"></div><div class="hero-orb hero-orb-two"></div>
-      <div class="hero-copy reveal">
-        <p class="eyebrow">EVENTS · FLOWERS · PEOPLE · MOMENTS</p>
-        <h1 id="hero-title">Создаём атмосферу,<br><em>в которой хочется остаться</em></h1>
-        <p class="hero-lead">Флористика, свадебное оформление, декор и организация событий — как единая история, собранная вокруг вас.</p>
-        <div class="hero-actions"><a class="button button-primary" href="#portfolio">Смотреть работы</a><a class="button button-ghost" href="#contact">Обсудить событие</a></div>
+<header class="site-header">
+  <a class="brand" href="#top" aria-label="DekSad — на главную">
+    <img src="assets/deksad-logo.svg" alt="">
+    <span>DekSad</span>
+  </a>
+  <nav class="nav" id="nav">
+    <a href="#services">Услуги</a>
+    <a href="#portfolio">Портфолио</a>
+    <a href="#directory">Организаторы</a>
+    <a href="#about">О нас</a>
+    <a class="nav-cta" href="#contact">Связаться</a>
+  </nav>
+  <button class="menu-btn" id="menuBtn" aria-label="Открыть меню" aria-expanded="false"><span></span><span></span></button>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-logo-wrap reveal"><img src="assets/deksad-logo.svg" alt="DekSad — Event Organization & Floral Design" class="hero-logo"></div>
+    <div class="hero-copy reveal">
+      <p class="eyebrow">EVENT ORGANIZATION · FLORAL DESIGN</p>
+      <h1 data-content="heroTitle">Создаём атмосферу, в которой хочется остаться</h1>
+      <p class="lead" data-content="heroLead">Флористика, декор и организация событий — как единая история, собранная вокруг вас.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#portfolio">Смотреть работы</a>
+        <a class="btn ghost" href="#contact">Обсудить событие</a>
       </div>
-      <div class="hero-visual reveal delay-1"><div class="logo-halo"></div><img src="assets/deksad-logo.svg?v=20260928-5" alt="DekSad — Event Organization & Floral Design" width="700" height="700"></div>
-      <a class="scroll-cue" href="#services" aria-label="Перейти к услугам">↓</a>
-    </section>
-    <section class="intro section" id="services">
-      <div class="section-kicker reveal">DekSad</div>
-      <div class="intro-grid"><h2 class="reveal">Не просто оформление.<br>Цельный образ события.</h2><p class="reveal delay-1">Мы соединяем флористику, пространство, свет, детали и ритм дня так, чтобы всё выглядело естественно — без визуального шума и случайных решений.</p></div>
-    </section>
-    <section class="services section section-dark">
-      <article class="service-card reveal" id="weddings"><span>01</span><h3>Свадьбы</h3><p>Концепция, церемония, банкет, флористика и детали — в одном визуальном языке.</p><a href="#contact">Обсудить свадьбу →</a></article>
-      <article class="service-card reveal delay-1" id="floristry"><span>02</span><h3>Флористика</h3><p>Живые композиции с естественным ростом растений, воздухом и выразительным силуэтом.</p><a href="#contact">Заказать флористику →</a></article>
-      <article class="service-card reveal delay-2" id="decor"><span>03</span><h3>Декор</h3><p>Предметы, текстиль, сервировка и пространство, которые поддерживают общую идею.</p><a href="#contact">Обсудить декор →</a></article>
-      <article class="service-card reveal" id="events"><span>04</span><h3>Мероприятия</h3><p>От камерного ужина до большого события — с вниманием к сценарию, эстетике и гостям.</p><a href="#contact">Обсудить мероприятие →</a></article>
-    </section>
-    <section class="statement section"><p class="eyebrow reveal">NATURAL · PERSONAL · TIMELESS</p><blockquote class="reveal delay-1">Красивое событие не должно выглядеть собранным по шаблону. Оно должно ощущаться <em>вашим</em>.</blockquote></section>
-    <section class="portfolio section" id="portfolio">
-      <div class="section-heading reveal"><div><p class="eyebrow">ПОРТФОЛИО</p><h2>Истории, которые хочется рассматривать</h2></div><p>Свадьбы, камерные ужины, церемонии и флористические композиции — с вниманием к пространству, сезону и деталям.</p></div>
-      <div class="portfolio-grid">
-        <article class="portfolio-item large reveal"><div class="portfolio-art art-one"><span>WEDDINGS</span></div><h3>Свадебное оформление</h3><p>Церемония · флористика · декор</p></article>
-        <article class="portfolio-item reveal delay-1"><div class="portfolio-art art-two"><span>FLORAL</span></div><h3>Естественная флористика</h3><p>Форма · движение · воздух</p></article>
-        <article class="portfolio-item reveal delay-2"><div class="portfolio-art art-three"><span>EVENTS</span></div><h3>Частные события</h3><p>Концепция · атмосфера · детали</p></article>
+    </div>
+    <a class="scroll-cue" href="#services">↓</a>
+  </section>
+
+  <section class="section intro" id="services">
+    <p class="eyebrow reveal">DEKSAD</p>
+    <div class="split">
+      <h2 class="reveal" data-content="introTitle">Не просто оформление. Цельный образ события.</h2>
+      <p class="copy reveal" data-content="introText">Мы соединяем флористику, пространство, свет, детали и ритм дня так, чтобы всё выглядело естественно — без визуального шума и случайных решений.</p>
+    </div>
+    <div class="service-grid">
+      <article class="service-card reveal"><span>01</span><h3>Свадьбы</h3><p>Концепция, церемония, банкет, флористика и детали в одном визуальном языке.</p></article>
+      <article class="service-card reveal"><span>02</span><h3>Флористика</h3><p>Живые композиции с естественным ростом растений, воздухом и выразительным силуэтом.</p></article>
+      <article class="service-card reveal"><span>03</span><h3>Декор</h3><p>Текстиль, сервировка, предметы и пространство, которые поддерживают общую идею.</p></article>
+      <article class="service-card reveal"><span>04</span><h3>События</h3><p>От камерного ужина до большого события — с вниманием к сценарию, эстетике и гостям.</p></article>
+    </div>
+  </section>
+
+  <section class="section portfolio" id="portfolio">
+    <div class="section-head">
+      <div><p class="eyebrow">ПОРТФОЛИО</p><h2>Проекты DekSad</h2></div>
+      <p>Фото и проекты добавляются через админку и появляются здесь автоматически.</p>
+    </div>
+    <div id="projectsGrid" class="projects-grid">
+      <div class="empty-card">Первые проекты скоро появятся здесь.</div>
+    </div>
+  </section>
+
+  <section class="section directory" id="directory">
+    <div class="section-head">
+      <div><p class="eyebrow">КАТАЛОГ</p><h2>Найти организатора или декоратора</h2></div>
+      <p>Поиск по имени, описанию, городу и направлению.</p>
+    </div>
+    <form id="providerSearch" class="search-panel">
+      <label><span>Кого ищем</span><input name="q" placeholder="Имя, студия, специализация"></label>
+      <label><span>Город</span><input name="city" placeholder="Москва"></label>
+      <label><span>Направление</span>
+        <select name="category">
+          <option value="">Все</option>
+          <option>Организатор</option><option>Декоратор</option><option>Флорист</option>
+          <option>Ведущий</option><option>Фотограф</option><option>Площадка</option>
+        </select>
+      </label>
+      <button class="btn primary" type="submit">Найти</button>
+    </form>
+    <div id="providersGrid" class="provider-grid"></div>
+
+    <div class="provider-cta">
+      <div><p class="eyebrow">ДЛЯ ПРОФЕССИОНАЛОВ</p><h3>Хотите появиться в каталоге?</h3><p>Организаторы, декораторы, флористы и другие специалисты могут отправить заявку. После модерации карточка появится в поиске.</p></div>
+      <button class="btn ghost" id="offerBtn" type="button">Предложить услуги</button>
+    </div>
+  </section>
+
+  <section class="section about" id="about">
+    <div class="about-logo reveal"><img src="assets/deksad-logo.svg" alt="DekSad"></div>
+    <div class="about-copy reveal">
+      <p class="eyebrow">О DEKSAD</p>
+      <h2 data-content="aboutTitle">Эстетика начинается с внимания.</h2>
+      <p data-content="aboutText">К месту, сезону, характеру пары или героя события. Мы начинаем с разговора и собираем решение вокруг вашей истории.</p>
+    </div>
+  </section>
+
+  <section class="section contact" id="contact">
+    <div class="contact-card">
+      <p class="eyebrow">НАЧНЁМ С ВАШЕЙ ИСТОРИИ</p>
+      <h2>Расскажите о событии, которое вы представляете.</h2>
+      <p>Мы свяжемся с вами и предложим первый вектор концепции.</p>
+      <div class="contact-links">
+        <a class="btn primary" id="contactEmail" href="mailto:hello@deksad.ru">hello@deksad.ru</a>
+        <a class="btn ghost hidden" id="contactPhone" href="#"></a>
       </div>
-    </section>
-    <section class="about section section-light" id="about"><div class="about-mark reveal">DS</div><div class="about-copy reveal delay-1"><p class="eyebrow">О DEKSAD</p><h2>Эстетика начинается с внимания.</h2><p>К месту. К сезону. К характеру пары или героя события. К тому, как цветы ведут себя в пространстве и как гости чувствуют себя внутри него.</p><p>Поэтому мы начинаем не с каталога декора, а с разговора — и собираем решение вокруг вашей истории.</p></div></section>
-    <section class="process section"><div class="section-heading reveal"><div><p class="eyebrow">КАК МЫ РАБОТАЕМ</p><h2>От первой идеи до дня события</h2></div></div><ol class="process-list">
-      <li class="reveal"><span>01</span><div><h3>Знакомимся</h3><p>Обсуждаем формат, пространство, настроение и то, чего точно не хочется.</p></div></li>
-      <li class="reveal delay-1"><span>02</span><div><h3>Создаём концепцию</h3><p>Фиксируем палитру, флористику, материалы, ключевые акценты и общую логику оформления.</p></div></li>
-      <li class="reveal delay-2"><span>03</span><div><h3>Готовим реализацию</h3><p>Собираем детали, согласуем решения и готовим пространство к монтажу.</p></div></li>
-      <li class="reveal"><span>04</span><div><h3>Создаём событие</h3><p>Монтаж, финальные штрихи и цельная атмосфера в день мероприятия.</p></div></li>
-    </ol></section>
-    <section class="contact section" id="contact"><div class="contact-card reveal"><p class="eyebrow">НАЧНЁМ С ВАШЕЙ ИСТОРИИ</p><h2>Расскажите о событии,<br>которое вы представляете.</h2><p>Мы вернёмся к вам с вопросами и предложим первый вектор концепции.</p><div class="contact-actions"><a class="button button-primary" href="mailto:hello@deksad.ru?subject=DekSad%20—%20обсудить%20событие">hello@deksad.ru</a><a class="button button-ghost" href="#top">Наверх ↑</a></div><small>Флористика · декор · организация событий</small></div></section>
-  </main>
-  <footer class="site-footer"><a class="brand" href="#top"><img src="assets/deksad-logo.svg?v=20260928-5" alt="" width="46" height="46" style="border-radius:50%;object-fit:cover"><span>DekSad</span></a><p>Event Organization & Floral Design</p><p>© <span id="year"></span> DekSad</p></footer>
-  <script src="script.js?v=20260928-5" defer></script>
-</body></html>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <a class="brand" href="#top"><img src="assets/deksad-logo.svg" alt=""><span>DekSad</span></a>
+  <p>Event Organization & Floral Design</p>
+  <p>© <span id="year"></span> DekSad</p>
+</footer>
+
+<dialog id="offerDialog">
+  <form id="offerForm" method="dialog" class="dialog-card">
+    <button class="dialog-close" type="button" id="offerClose" aria-label="Закрыть">×</button>
+    <p class="eyebrow">ПРЕДЛОЖИТЬ УСЛУГИ</p><h2>Добавиться в каталог DekSad</h2>
+    <div class="dialog-grid">
+      <label><span>Имя / название *</span><input name="name" required></label>
+      <label><span>Город</span><input name="city"></label>
+      <label><span>Направление *</span><select name="category" required><option>Организатор</option><option>Декоратор</option><option>Флорист</option><option>Ведущий</option><option>Фотограф</option><option>Площадка</option></select></label>
+      <label><span>Телефон</span><input name="phone"></label>
+      <label><span>Email</span><input name="email" type="email"></label>
+      <label><span>Соцсеть</span><input name="social" placeholder="@username или ссылка"></label>
+      <label class="full"><span>Сайт</span><input name="website"></label>
+      <label class="full"><span>О себе / услугах</span><textarea name="description" rows="5"></textarea></label>
+    </div>
+    <p class="form-note">Нужен хотя бы один контакт: телефон, email или соцсеть.</p>
+    <button class="btn primary" type="submit">Отправить на модерацию</button>
+    <div id="offerMsg" class="form-msg"></div>
+  </form>
+</dialog>
+
+<script src="script.js" defer></script>
+</body>
+</html>

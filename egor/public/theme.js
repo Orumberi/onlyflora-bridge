@@ -210,6 +210,22 @@
   const searchAction = "/search/";
   const searchName = "query";
 
+  function correctKeyboardLayout(value) {
+    const source = "qwertyuiop[]asdfghjkl;'zxcvbnm,.`";
+    const target = "йцукенгшщзхъфывапролджэячсмитьбюё";
+    if (!/[a-z\[\];',.`]/i.test(value) || /[а-яё]/i.test(value)) return value;
+    // Keep normal Latin cultivar names intact. Obvious wrong-layout strings
+    // either contain keyboard punctuation or have no Latin vowels.
+    if (!/[\[\];',.`]/.test(value) && /[aeiouy]/i.test(value)) return value;
+    return [...value].map(character => {
+      const lower = character.toLowerCase();
+      const index = source.indexOf(lower);
+      if (index < 0) return character;
+      const replacement = target[index];
+      return character === character.toUpperCase() ? replacement.toUpperCase() : replacement;
+    }).join("");
+  }
+
   const categories = [
     ["Лиственные деревья", "assets/categories/deciduous-trees.png"],
     ["Хвойные растения", "assets/categories/conifers.png"],
@@ -257,6 +273,11 @@
       <span class="of-category-title">${escapeHtml(item.label)}</span>
     </a>`).join("");
 
+  const greeneryMenu = [
+    { label: "Все растения", href: links.greenery },
+    ...categories.filter(item => !item.external)
+  ].map(item => `<a href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`).join("");
+
   const productCards = products.map(item => `
     <a class="of-product-card" href="${escapeHtml(item.href)}">
       <img class="of-card-image" src="${escapeHtml(item.image)}" alt="" loading="lazy">
@@ -279,20 +300,23 @@
           <a class="of-action" href="${escapeHtml(links.account)}"><span class="of-action-icon">♙</span><span>Аккаунт</span></a>
         </nav>
       </header>
-      <nav class="of-nav" aria-label="Основное меню">
-        <a href="${escapeHtml(links.greenery)}">Озеленение</a>
-        <a href="${escapeHtml(links.improvement)}">Благоустройство</a>
-        <a href="${escapeHtml(links.marketplace)}">Торговая площадка</a>
-        <a href="${escapeHtml(links.housing)}">Озеленение ЖК</a>
-        <a href="${escapeHtml(links.landscape)}">Ландшафтный дизайн</a>
-        <a href="${escapeHtml(links.care)}">Уход и материалы</a>
-        <a href="${escapeHtml(links.nurseries)}">Питомники</a>
-        <a href="${escapeHtml(links.events)}" target="_blank" rel="noopener noreferrer">Организация мероприятий</a>
-        <a href="${escapeHtml(links.sale)}">Акции</a>
-        <a href="${escapeHtml(links.blog)}">Блог</a>
-        <a href="${escapeHtml(links.about)}">О проекте</a>
-        <span class="of-preview-badge">Only Test — предпросмотр</span>
-      </nav>
+      <div class="of-nav-wrap">
+        <nav class="of-nav" aria-label="Основное меню">
+          <button class="of-nav-greenery" type="button" aria-expanded="false" aria-controls="of-greenery-menu">Озеленение<span aria-hidden="true">⌄</span></button>
+          <a href="${escapeHtml(links.improvement)}">Благоустройство</a>
+          <a href="${escapeHtml(links.marketplace)}">Торговая площадка</a>
+          <a href="${escapeHtml(links.housing)}">Озеленение ЖК</a>
+          <a href="${escapeHtml(links.landscape)}">Ландшафтный дизайн</a>
+          <a href="${escapeHtml(links.care)}">Уход и материалы</a>
+          <a href="${escapeHtml(links.nurseries)}">Питомники</a>
+          <a href="${escapeHtml(links.events)}" target="_blank" rel="noopener noreferrer">Организация мероприятий</a>
+          <a href="${escapeHtml(links.sale)}">Акции</a>
+          <a href="${escapeHtml(links.blog)}">Блог</a>
+          <a href="${escapeHtml(links.about)}">О проекте</a>
+          <span class="of-preview-badge">Only Test — предпросмотр</span>
+        </nav>
+        <div class="of-nav-dropdown" id="of-greenery-menu" hidden>${greeneryMenu}</div>
+      </div>
       <section class="of-hero"${hero ? ` style="--of-hero-image:url('${escapeHtml(hero)}')"` : ""}>
         <div class="of-hero-copy"><h1>Растения<br>для красивой жизни</h1><p>Тысячи растений от проверенных питомников по всей России</p><a class="of-primary" href="${escapeHtml(catalogHref)}">Перейти в каталог</a></div>
       </section>
@@ -321,5 +345,31 @@
 
   oldBody.prepend(root);
   oldBody.classList.add("of-modern-active");
+
+  const searchForm = root.querySelector(".of-search");
+  searchForm?.addEventListener("submit", () => {
+    const input = searchForm.elements.namedItem(searchName);
+    if (input instanceof HTMLInputElement) input.value = correctKeyboardLayout(input.value.trim());
+  });
+
+  const greeneryButton = root.querySelector(".of-nav-greenery");
+  const greeneryDropdown = root.querySelector(".of-nav-dropdown");
+  const closeGreeneryMenu = () => {
+    if (!greeneryButton || !greeneryDropdown) return;
+    greeneryButton.setAttribute("aria-expanded", "false");
+    greeneryDropdown.hidden = true;
+  };
+  greeneryButton?.addEventListener("click", event => {
+    event.stopPropagation();
+    const open = greeneryButton.getAttribute("aria-expanded") !== "true";
+    greeneryButton.setAttribute("aria-expanded", String(open));
+    greeneryDropdown.hidden = !open;
+  });
+  document.addEventListener("click", event => {
+    if (!root.querySelector(".of-nav-wrap")?.contains(event.target)) closeGreeneryMenu();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeGreeneryMenu();
+  });
   document.dispatchEvent(new CustomEvent("onlyflora:modern-ready"));
 })();

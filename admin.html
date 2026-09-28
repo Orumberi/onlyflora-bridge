@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DekSad Admin</title>
+<style>
+:root{--bg:#071a13;--panel:#0d241b;--line:#294236;--ink:#f6f0e4;--muted:#a8b3ab;--gold:#d9b66d;--paper:#f5f0e5;--dark:#14231d}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink)}button,input,textarea,select{font:inherit}.hidden{display:none!important}
+.login{min-height:100svh;display:grid;place-items:center;padding:24px}.login-card{width:min(430px,100%);padding:32px;border:1px solid var(--line);border-radius:24px;background:var(--panel)}.login-card img{width:92px;height:92px;border-radius:50%;display:block;margin:0 auto 18px}.login-card h1{text-align:center;font:400 34px Georgia,serif}.login-card input{width:100%;padding:15px;border-radius:12px;border:1px solid var(--line);background:#06150f;color:#fff}.login-card button{width:100%;margin-top:12px}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100svh}.side{padding:24px 16px;border-right:1px solid var(--line);position:sticky;top:0;height:100svh}.brand{display:flex;align-items:center;gap:12px;font:400 25px Georgia,serif;margin:0 8px 26px}.brand img{width:44px;height:44px;border-radius:50%}.nav button{display:block;width:100%;text-align:left;padding:13px 14px;margin:5px 0;border:0;border-radius:12px;background:transparent;color:var(--muted)}.nav button.active,.nav button:hover{background:#153328;color:#fff}.main{padding:30px;max-width:1180px;width:100%}.top{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:26px}.top h1{font:400 40px Georgia,serif;margin:0}.btn{border:0;border-radius:12px;padding:12px 16px;background:var(--gold);color:#182118;cursor:pointer}.btn.secondary{background:#17372b;color:#fff}.btn.danger{background:#61332f;color:#fff}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}.stat b{display:block;font-size:34px;color:var(--gold)}.stat span{color:var(--muted)}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:7px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px;background:#06150f;color:#fff}.field textarea{min-height:110px;resize:vertical}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.list{display:grid;gap:10px}.row{display:grid;grid-template-columns:78px 1fr auto;gap:14px;align-items:center;padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:15px}.thumb{width:78px;height:68px;border-radius:10px;background:#17372b;object-fit:cover}.row h3{margin:0 0 5px;font-size:16px}.row p{margin:0;color:var(--muted);font-size:13px}.row-actions{display:flex;gap:7px;flex-wrap:wrap}.row-actions button{padding:8px 10px}.notice{padding:12px 14px;border-radius:12px;background:#17372b;margin:10px 0;color:#d7e4dc}.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}.media-item{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}.media-item img{width:100%;aspect-ratio:1;object-fit:cover}.media-item div{padding:8px;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+@media(max-width:800px){.app{grid-template-columns:1fr}.side{height:auto;position:static;border-right:0;border-bottom:1px solid var(--line);padding:12px}.brand{margin-bottom:8px}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap;width:auto}.main{padding:18px}.grid{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.row{grid-template-columns:58px 1fr}.thumb{width:58px;height:58px}.row-actions{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<section id="login" class="login">
+  <form id="loginForm" class="login-card">
+    <img src="/assets/deksad-logo.svg" alt="DekSad"><h1>DekSad Admin</h1>
+    <p style="color:var(--muted)">Редактирование сайта, проектов, организаторов и заявок.</p>
+    <input id="password" type="password" placeholder="Пароль администратора" autocomplete="current-password">
+    <button class="btn" type="submit">Войти</button><div id="loginMsg" class="notice hidden"></div>
+  </form>
+</section>
+
+<div id="app" class="app hidden">
+  <aside class="side"><div class="brand"><img src="/assets/deksad-logo.svg" alt=""><span>DekSad</span></div>
+    <nav class="nav">
+      <button data-view="dashboard" class="active">Обзор</button>
+      <button data-view="content">Сайт</button>
+      <button data-view="projects">Проекты</button>
+      <button data-view="providers">Организаторы</button>
+      <button data-view="requests">Заявки</button>
+      <button data-view="media">Фото</button>
+    </nav>
+  </aside>
+  <main class="main">
+    <div class="top"><h1 id="title">Обзор</h1><button id="logout" class="btn secondary">Выйти</button></div>
+
+    <section id="view-dashboard" class="view">
+      <div class="grid" id="stats"></div>
+      <div class="card" style="margin-top:16px"><h2>Что уже умеет админка</h2><p style="color:var(--muted)">Загружать фотографии, менять тексты сайта, добавлять проекты, публиковать организаторов/декораторов и разбирать входящие заявки.</p></div>
+    </section>
+
+    <section id="view-content" class="view hidden">
+      <form id="contentForm" class="card form-grid">
+        <div class="field full"><label>Главный заголовок</label><input name="heroTitle"></div>
+        <div class="field full"><label>Подзаголовок</label><textarea name="heroLead"></textarea></div>
+        <div class="field full"><label>Заголовок второго экрана</label><input name="introTitle"></div>
+        <div class="field full"><label>Текст второго экрана</label><textarea name="introText"></textarea></div>
+        <div class="field full"><label>Заголовок «О нас»</label><input name="aboutTitle"></div>
+        <div class="field full"><label>Текст «О нас»</label><textarea name="aboutText"></textarea></div>
+        <div class="field"><label>Email</label><input name="contactEmail"></div>
+        <div class="field"><label>Телефон</label><input name="contactPhone"></div>
+        <div class="field"><label>Telegram / соцсеть</label><input name="telegram"></div>
+        <div class="field"><label>Основной город</label><input name="city"></div>
+        <div class="field full"><button class="btn" type="submit">Сохранить изменения</button></div>
+      </form>
+    </section>
+
+    <section id="view-projects" class="view hidden">
+      <form id="projectForm" class="card form-grid">
+        <input type="hidden" name="id">
+        <div class="field"><label>Название</label><input name="title" required></div>
+        <div class="field"><label>Категория</label><select name="category"><option>Свадьба</option><option>Флористика</option><option>Декор</option><option>Событие</option></select></div>
+        <div class="field full"><label>Описание</label><textarea name="description"></textarea></div>
+        <div class="field"><label>ID фотографии</label><input name="imageId" inputmode="numeric" placeholder="сначала загрузите фото"></div>
+        <div class="field"><label>Порядок</label><input name="sortOrder" type="number" value="100"></div>
+        <div class="field"><label><input name="published" type="checkbox" checked> Опубликован</label></div>
+        <div class="field full"><button class="btn" type="submit">Сохранить проект</button></div>
+      </form>
+      <div id="projectsList" class="list" style="margin-top:16px"></div>
+    </section>
+
+    <section id="view-providers" class="view hidden">
+      <form id="providerForm" class="card form-grid">
+        <input type="hidden" name="id">
+        <div class="field"><label>Название / имя</label><input name="name" required></div>
+        <div class="field"><label>Город</label><input name="city"></div>
+        <div class="field"><label>Категория</label><select name="category"><option>Организатор</option><option>Декоратор</option><option>Флорист</option><option>Ведущий</option><option>Фотограф</option><option>Площадка</option></select></div>
+        <div class="field"><label>Статус</label><select name="status"><option value="published">Опубликован</option><option value="pending">На модерации</option><option value="rejected">Отклонён</option></select></div>
+        <div class="field full"><label>Описание</label><textarea name="description"></textarea></div>
+        <div class="field"><label>Телефон</label><input name="phone"></div><div class="field"><label>Email</label><input name="email"></div>
+        <div class="field"><label>Сайт</label><input name="website"></div><div class="field"><label>Соцсеть</label><input name="social"></div>
+        <div class="field"><label>ID фотографии</label><input name="imageId" inputmode="numeric"></div>
+        <div class="field"><label><input name="featured" type="checkbox"> Показывать первым</label></div>
+        <div class="field full"><button class="btn" type="submit">Сохранить</button></div>
+      </form>
+      <div id="providersList" class="list" style="margin-top:16px"></div>
+    </section>
+
+    <section id="view-requests" class="view hidden"><div id="requestsList" class="list"></div></section>
+
+    <section id="view-media" class="view hidden">
+      <form id="mediaForm" class="card"><input id="mediaFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" required><button class="btn" type="submit" style="margin-left:8px">Загрузить фото</button><div id="mediaMsg" class="notice hidden"></div></form>
+      <div id="mediaGrid" class="media-grid" style="margin-top:16px"></div>
+    </section>
+  </main>
+</div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+async function api(url,opt={}){const r=await fetch(url,{...opt,headers:{...(opt.body instanceof FormData?{}:{'Content-Type':'application/json'}),...(opt.headers||{})}});if(r.status===401){showLogin();throw new Error('unauthorized')}const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.message||data.error||'Ошибка');return data}
+function showLogin(){$('#login').classList.remove('hidden');$('#app').classList.add('hidden')}
+function showApp(){$('#login').classList.add('hidden');$('#app').classList.remove('hidden');openView('dashboard')}
+$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:$('#password').value})});showApp()}catch(err){$('#loginMsg').textContent='Не вошло: '+err.message;$('#loginMsg').classList.remove('hidden')}})
+$('#logout').onclick=async()=>{await api('/api/admin/logout',{method:'POST',body:'{}'}).catch(()=>{});showLogin()}
+$$('.nav button').forEach(b=>b.onclick=()=>openView(b.dataset.view));
+async function openView(name){$$('.view').forEach(v=>v.classList.add('hidden'));$('#view-'+name).classList.remove('hidden');$$('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===name));$('#title').textContent={dashboard:'Обзор',content:'Сайт',projects:'Проекты',providers:'Организаторы',requests:'Заявки',media:'Фото'}[name];if(name==='dashboard')loadStats();if(name==='content')loadContent();if(name==='projects')loadProjects();if(name==='providers')loadProviders('published');if(name==='requests')loadRequests();if(name==='media')loadMedia()}
+async function loadStats(){const s=await api('/api/admin/stats');$('#stats').innerHTML=[['Проекты',s.projects],['Организаторы',s.providers],['Новые заявки',s.pending],['Фото',s.media]].map(x=>'<div class="card stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('')}
+async function loadContent(){const x=await api('/api/content');for(const [k,v] of Object.entries(x.data||{})){const el=$('#contentForm [name="'+k+'"]');if(el)el.value=v||''}}
+$('#contentForm').addEventListener('submit',async e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target));await api('/api/admin/content',{method:'PUT',body:JSON.stringify(data)});alert('Сохранено')})
+function formDataObj(form){const d=Object.fromEntries(new FormData(form));d.published=form.published?.checked;d.featured=form.featured?.checked;d.imageId=d.imageId?Number(d.imageId):null;d.sortOrder=d.sortOrder?Number(d.sortOrder):100;return d}
+$('#projectForm').addEventListener('submit',async e=>{e.preventDefault();const d=formDataObj(e.target),id=d.id;delete d.id;await api(id?'/api/admin/projects/'+id:'/api/admin/projects',{method:id?'PUT':'POST',body:JSON.stringify(d)});e.target.reset();e.target.sortOrder.value=100;e.target.published.checked=true;loadProjects()})
+async function loadProjects(){const xs=await api('/api/admin/projects');$('#projectsList').innerHTML=xs.map(x=>'<div class="row">'+(x.imageId?'<img class="thumb" src="/media/'+x.imageId+'">':'<div class="thumb"></div>')+'<div><h3>'+esc(x.title)+'</h3><p>'+esc(x.category)+' · '+(x.published?'опубликован':'скрыт')+'</p></div><div class="row-actions"><button class="btn secondary" onclick="editProject('+x.id+')">Править</button><button class="btn danger" onclick="deleteProject('+x.id+')">Удалить</button></div></div>').join('')}
+window.editProject=async id=>{const xs=await api('/api/admin/projects');const x=xs.find(v=>v.id===id);const f=$('#projectForm');for(const k of ['id','title','category','description','imageId','sortOrder'])if(f[k])f[k].value=x[k]??'';f.published.checked=x.published;scrollTo({top:f.offsetTop-20,behavior:'smooth'})}
+window.deleteProject=async id=>{if(confirm('Удалить проект?')){await api('/api/admin/projects/'+id,{method:'DELETE'});loadProjects()}}
+$('#providerForm').addEventListener('submit',async e=>{e.preventDefault();const d=formDataObj(e.target),id=d.id;delete d.id;await api(id?'/api/admin/providers/'+id:'/api/admin/providers',{method:id?'PUT':'POST',body:JSON.stringify(d)});e.target.reset();e.target.status.value='published';loadProviders('published')})
+async function loadProviders(status){const xs=await api('/api/admin/providers?status='+status);const target=status==='pending'?$('#requestsList'):$('#providersList');target.innerHTML=xs.map(x=>'<div class="row">'+(x.imageId?'<img class="thumb" src="/media/'+x.imageId+'">':'<div class="thumb"></div>')+'<div><h3>'+esc(x.name)+'</h3><p>'+esc(x.category)+' · '+esc(x.city||'без города')+' · '+esc(x.status)+'</p></div><div class="row-actions">'+(status==='pending'?'<button class="btn" onclick="approve('+x.id+')">Опубликовать</button><button class="btn danger" onclick="reject('+x.id+')">Отклонить</button>':'<button class="btn secondary" onclick="editProvider('+x.id+')">Править</button><button class="btn danger" onclick="deleteProvider('+x.id+')">Удалить</button>')+'</div></div>').join('')||'<div class="notice">Пока пусто</div>'}
+async function loadRequests(){loadProviders('pending')}
+window.editProvider=async id=>{const xs=await api('/api/admin/providers');const x=xs.find(v=>v.id===id);const f=$('#providerForm');for(const k of ['id','name','city','category','status','description','phone','email','website','social','imageId'])if(f[k])f[k].value=x[k]??'';f.featured.checked=x.featured;openView('providers');scrollTo({top:f.offsetTop-20,behavior:'smooth'})}
+window.deleteProvider=async id=>{if(confirm('Удалить?')){await api('/api/admin/providers/'+id,{method:'DELETE'});loadProviders('published')}}
+window.approve=async id=>{const xs=await api('/api/admin/providers?status=pending');const x=xs.find(v=>v.id===id);x.status='published';await api('/api/admin/providers/'+id,{method:'PUT',body:JSON.stringify(x)});loadRequests()}
+window.reject=async id=>{const xs=await api('/api/admin/providers?status=pending');const x=xs.find(v=>v.id===id);x.status='rejected';await api('/api/admin/providers/'+id,{method:'PUT',body:JSON.stringify(x)});loadRequests()}
+$('#mediaForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData();fd.append('file',$('#mediaFile').files[0]);const x=await api('/api/admin/media',{method:'POST',body:fd});$('#mediaMsg').textContent='Загружено. ID фотографии: '+x.id;$('#mediaMsg').classList.remove('hidden');e.target.reset();loadMedia()})
+async function loadMedia(){const xs=await api('/api/admin/media');$('#mediaGrid').innerHTML=xs.map(x=>'<div class="media-item"><img src="/media/'+x.id+'"><div>ID '+x.id+' · '+esc(x.filename)+'</div></div>').join('')}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+api('/api/admin/session').then(s=>s.authenticated?showApp():showLogin()).catch(showLogin)
+</script>
+</body></html>

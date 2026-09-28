@@ -19,7 +19,7 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
   router.use((_req, res, next) => {
     res.set({ "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow", "Referrer-Policy": "no-referrer",
       "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors https://onlyflora.ru https://onlyflora.webasyst.cloud; object-src 'none'; base-uri 'none'" });
-    if (["/widget.js", "/theme.js", "/theme.css"].includes(_req.path)) {
+    if (["/widget.js", "/theme.js", "/theme.css"].includes(_req.path) || _req.path.startsWith("/assets/")) {
       res.set("Cross-Origin-Resource-Policy", "cross-origin");
       res.set("Access-Control-Allow-Origin", "*");
     }

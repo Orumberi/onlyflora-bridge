@@ -82,6 +82,30 @@ test("modern homepage uses Shop-Script search, fixed category assets and legal l
   }
 });
 
+test("category assets can load cross-origin inside the Webasyst preview", async () => {
+  const router = await readFile("egor/router.js", "utf8");
+  assert.match(router, /_req\.path\.startsWith\("\/assets\/"\)/);
+  assert.match(router, /Cross-Origin-Resource-Policy", "cross-origin"/);
+});
+
+test("modern navigation has a real accessible greenery dropdown", async () => {
+  const theme = await readFile("egor/public/theme.js", "utf8");
+  const css = await readFile("egor/public/theme.css", "utf8");
+  assert.match(theme, /class="of-nav-greenery"/);
+  assert.match(theme, /aria-controls="of-greenery-menu"/);
+  assert.match(theme, /id="of-greenery-menu"/);
+  assert.match(theme, /greeneryButton\.setAttribute\("aria-expanded"/);
+  assert.match(css, /\.of-nav-dropdown/);
+});
+
+test("search corrects an obvious English keyboard layout typo", async () => {
+  const theme = await readFile("egor/public/theme.js", "utf8");
+  assert.match(theme, /function correctKeyboardLayout/);
+  assert.match(theme, /const source = "qwertyuiop\[\]asdfghjkl;'zxcvbnm,\.`"/);
+  assert.match(theme, /const target = "йцукенгшщзхъфывапролджэячсмитьбюё"/);
+  assert.match(theme, /correctKeyboardLayout\(input\.value\.trim\(\)\)/);
+});
+
 test("onlytest product cards use the plant placeholder for missing or broken photos", async () => {
   const theme = await readFile("egor/public/theme.js", "utf8");
   const css = await readFile("egor/public/theme.css", "utf8");

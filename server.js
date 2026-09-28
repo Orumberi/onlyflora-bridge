@@ -1,13 +1,8 @@
-import express from "express";
-import multer from "multer";
-import pg from "pg";
-import crypto from "node:crypto";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const { Pool } = pg;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const express = require("express");
+const multer = require("multer");
+const { Pool } = require("pg");
+const crypto = require("node:crypto");
+const path = require("node:path");
 const app = express();
 const port = Number(process.env.PORT || 3000);
 
@@ -25,16 +20,9 @@ const upload = multer({
 });
 
 const databaseUrl = process.env.DATABASE_URL || "";
-const pool = databaseUrl
-  ? new Pool({
-      connectionString: databaseUrl,
-      ssl: process.env.PGSSL === "disable" ? false : { rejectUnauthorized: false },
-      max: 5,
-    })
-  : null;
-
+let pool = null;
 let dbReady = false;
-let dbError = databaseUrl ? null : "DATABASE_URL is not configured";
+let dbError = databaseUrl ? "Database is starting" : "DATABASE_URL is not configured";
 
 const defaultContent = {
   heroTitle: "Создаём атмосферу, в которой хочется остаться",
@@ -50,8 +38,14 @@ const defaultContent = {
 };
 
 async function initDb() {
-  if (!pool) return;
+  if (!databaseUrl) return;
   try {
+    pool = new Pool({
+      connectionString: databaseUrl,
+      ssl: process.env.PGSSL === "disable" ? false : { rejectUnauthorized: false },
+      max: 5,
+      connectionTimeoutMillis: 5000,
+    });
     await pool.query(`
       CREATE TABLE IF NOT EXISTS site_content (
         id smallint PRIMARY KEY DEFAULT 1 CHECK (id = 1),

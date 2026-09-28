@@ -18,8 +18,22 @@ export const extractionSchema = z.object({
   })).max(30), warnings: z.array(z.string().max(400)).max(10),
 });
 
+export function isServiceLine(value) {
+  const line = String(value || "").trim();
+  if (!line) return true;
+  return /(?:^|\s)доставк[аи](?=\s|$)/i.test(line)
+    || /^(?:условия\s+)?самовывоз(?=\s|$)/i.test(line)
+    || /^(?:регион|адрес|телефон|контакты|почта|e-?mail|итого|всего)(?=\s|\s*:|$)/i.test(line);
+}
+
 export function parseText(text) {
-  return { lines: text.split(/\n|;/).map(s => s.trim()).filter(Boolean).slice(0, 30).map(raw => {
+  const sourceLines = text.split(/\n|;/).map(s => s.trim()).filter(Boolean);
+  const serviceLines = sourceLines.filter(isServiceLine);
+  const plantLines = sourceLines.filter(line => !isServiceLine(line));
+  const warnings = [];
+  if (serviceLines.length) warnings.push("Пропущены служебные строки: " + serviceLines.length + ".");
+  if (plantLines.length > 30) warnings.push("Обработаны первые 30 строк. Остальные отправьте отдельно.");
+  return { lines: plantLines.slice(0, 30).map(raw => {
     let name = raw;
     // An explicit trailing unit is the safest quantity marker. Extract it
     // before dimensions so decimals such as "2,5 м" and trunk girth never
@@ -46,5 +60,5 @@ export function parseText(text) {
     return { name: name.replace(/[,;\-–—\s]+$/g, "").trim(), quantity,
       height: height?.[0].trim() || "", container: container?.[0] || "", uncertain: quantity === null,
       note: quantity === null ? "Укажите количество" : "" };
-  }), warnings: text.split(/\n|;/).filter(s => s.trim()).length > 30 ? ["Обработаны первые 30 строк. Остальные отправьте отдельно."] : [] };
+  }), warnings };
 }

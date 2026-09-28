@@ -85,3 +85,11 @@ test("onlytest product cards use the plant placeholder for missing or broken pho
   assert.match(theme, /"\.product"/);
   assert.match(css, /\.of-product-image-fallback/);
 });
+
+test("cookie details opens the embedded policy instead of a missing page", async () => {
+  const theme = await readFile("egor/public/theme.js", "utf8");
+  assert.match(theme, /\.ofcb-details/);
+  assert.match(theme, /event\?\.preventDefault\(\)/);
+  assert.match(theme, /Политика использования файлов cookie/);
+  assert.match(theme, /#of-cookie-policy/);
+});

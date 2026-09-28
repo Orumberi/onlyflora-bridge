@@ -54,15 +54,75 @@
     }
   }
 
+  const cookiePolicyMarkup = `
+    <div class="of-cookie-policy-backdrop" role="presentation">
+      <section class="of-cookie-policy-dialog" role="dialog" aria-modal="true" aria-labelledby="of-cookie-policy-title">
+        <button class="of-cookie-policy-close" type="button" aria-label="Закрыть">×</button>
+        <h2 id="of-cookie-policy-title">Политика использования файлов cookie</h2>
+        <p><strong>Редакция от 14 сентября 2026 года</strong></p>
+        <h3>Что такое cookie</h3>
+        <p>Cookie — небольшие фрагменты данных, которые сайт onlyflora.ru сохраняет в браузере пользователя. К ним относятся идентификаторы сессии, настройки и иные технические сведения.</p>
+        <h3>Для чего они используются</h3>
+        <ul>
+          <li><strong>Необходимые</strong> — обеспечивают безопасность, работу корзины, авторизацию, оформление заказа и сохранение сессии.</li>
+          <li><strong>Функциональные</strong> — запоминают выбранные настройки и делают использование сайта удобнее.</li>
+          <li><strong>Аналитические</strong> — помогают оценивать посещаемость и улучшать сайт; применяются после выбора пользователя, когда это требуется.</li>
+          <li><strong>Рекламные</strong> — используются только при подключении соответствующих сервисов и наличии правового основания.</li>
+        </ul>
+        <h3>Управление cookie</h3>
+        <p>Необязательные cookie можно отклонить кнопкой «Только необходимые». Сохранённые cookie можно удалить или запретить в настройках браузера. Запрет необходимых cookie может нарушить работу корзины, авторизации и оформления заказа.</p>
+        <h3>Оператор и контакты</h3>
+        <p>ИП Костына Анатолий Романович, ИНН 480901738236, ОГРНИП 322508100287772. Вопросы: <a href="mailto:agro@onlyflora.ru">agro@onlyflora.ru</a>.</p>
+        <button class="of-cookie-policy-done" type="button">Закрыть</button>
+      </section>
+    </div>`;
+
+  function openCookiePolicy(event) {
+    event?.preventDefault();
+    document.getElementById("of-cookie-policy-modal")?.remove();
+    const host = document.createElement("div");
+    host.id = "of-cookie-policy-modal";
+    host.innerHTML = `<style>
+      .of-cookie-policy-backdrop{position:fixed;inset:0;z-index:2147483647;background:rgba(14,31,22,.62);display:grid;place-items:center;padding:18px}
+      .of-cookie-policy-dialog{position:relative;width:min(760px,100%);max-height:min(82vh,760px);overflow:auto;background:#fff;color:#183426;border-radius:18px;padding:28px;box-shadow:0 24px 80px rgba(0,0,0,.32);font:15px/1.55 Arial,sans-serif}
+      .of-cookie-policy-dialog h2{margin:0 44px 8px 0;color:#246b3d;font-size:25px;line-height:1.2}
+      .of-cookie-policy-dialog h3{margin:20px 0 6px;font-size:18px;color:#1f5131}
+      .of-cookie-policy-dialog p,.of-cookie-policy-dialog ul{margin:8px 0}.of-cookie-policy-dialog ul{padding-left:22px}
+      .of-cookie-policy-dialog a{color:#246b3d}.of-cookie-policy-close{position:absolute;right:14px;top:10px;border:0;background:transparent;color:#183426;font:32px/1 Arial;cursor:pointer}
+      .of-cookie-policy-done{display:block;margin:22px 0 0 auto;border:0;border-radius:10px;background:#2d7a49;color:#fff;padding:11px 20px;font-weight:700;cursor:pointer}
+      @media(max-width:600px){.of-cookie-policy-backdrop{padding:8px}.of-cookie-policy-dialog{max-height:92vh;border-radius:14px;padding:20px}.of-cookie-policy-dialog h2{font-size:21px}}
+    </style>${cookiePolicyMarkup}`;
+    const close = () => host.remove();
+    host.addEventListener("click", click => {
+      if (click.target === host.querySelector(".of-cookie-policy-backdrop") || click.target.closest(".of-cookie-policy-close,.of-cookie-policy-done")) close();
+    });
+    document.body.append(host);
+    host.querySelector(".of-cookie-policy-close")?.focus();
+  }
+
+  function bindCookieDetails(root = document) {
+    const links = root.matches?.(".ofcb-details") ? [root] : [...(root.querySelectorAll?.(".ofcb-details") || [])];
+    for (const link of links) {
+      if (link.dataset.ofCookieDetailsBound === "1") continue;
+      link.dataset.ofCookieDetailsBound = "1";
+      link.href = "#of-cookie-policy";
+      link.addEventListener("click", openCookiePolicy);
+    }
+  }
+
   document.addEventListener("error", event => {
     if (event.target instanceof HTMLImageElement) useProductPlaceholder(event.target);
   }, true);
 
   applyProductFallbacks();
+  bindCookieDetails();
   new MutationObserver(records => {
     for (const record of records) {
       for (const node of record.addedNodes) {
-        if (node instanceof Element) applyProductFallbacks(node);
+        if (node instanceof Element) {
+          applyProductFallbacks(node);
+          bindCookieDetails(node);
+        }
       }
     }
   }).observe(document.documentElement, { childList: true, subtree: true });

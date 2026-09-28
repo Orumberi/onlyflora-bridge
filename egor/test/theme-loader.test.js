@@ -48,9 +48,20 @@ test("theme and widget both fail closed outside onlytest", async () => {
 
 test("modern navigation keeps every primary OnlyFlora section", async () => {
   const theme = await readFile("egor/public/theme.js", "utf8");
-  for (const section of ["Озеленение", "Благоустройство", "Торговая площадка", "Озеленение ЖК", "Ландшафтный дизайн", "Уход и материалы"]) {
+  for (const section of ["Озеленение", "Благоустройство", "Торговая площадка", "Озеленение ЖК", "Ландшафтный дизайн", "Уход и материалы", "Питомники", "Организация мероприятий"]) {
     assert.match(theme, new RegExp(`>${section}<`));
   }
+  assert.match(theme, /nurseries: "\/market\/"/);
+  assert.match(theme, /https:\/\/deksad\.ru\//);
+  assert.match(theme, /event-organization\.png/);
+});
+
+test("modern header uses the approved OnlyFlora lockup", async () => {
+  const theme = await readFile("egor/public/theme.js", "utf8");
+  assert.match(theme, /Бедный не имеет тени/);
+  assert.match(theme, /fill="#68c900"/);
+  assert.match(theme, /fill="#071d13"/);
+  assert.match(theme, /<circle cx="21\.2" cy="27\.5" r="3\.1" fill="#fff"/);
 });
 
 test("modern homepage runs on the Webasyst Site preview route", async () => {

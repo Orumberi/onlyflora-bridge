@@ -74,7 +74,7 @@ test("modern homepage uses Shop-Script search, fixed category assets and legal l
 test("onlytest product cards use the plant placeholder for missing or broken photos", async () => {
   const theme = await readFile("egor/public/theme.js", "utf8");
   const css = await readFile("egor/public/theme.css", "utf8");
-  const fallbackSetup = theme.indexOf("assets/product-card-placeholder.png");
+  const fallbackSetup = theme.indexOf("data:image/jpeg;base64,");
   const homepageGuard = theme.indexOf("if (!homePaths.has(path)) return");
   assert.ok(fallbackSetup >= 0 && fallbackSetup < homepageGuard, "fallback must run on every Only Test catalog page");
   assert.match(theme, /document\.addEventListener\("error"/);

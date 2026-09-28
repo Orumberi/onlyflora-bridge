@@ -398,7 +398,7 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: "server_error", message: process.env.NODE_ENV === "production" ? undefined : err?.message });
 });
 
-app.listen(port, () => {
-  console.log(`DekSad listening on :${port}`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`DekSad listening on 0.0.0.0:${port}`);
   initDb();
 });

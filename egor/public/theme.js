@@ -202,7 +202,7 @@
   }
 
   function logoMark() {
-    return '<svg viewBox="0 0 48 48" width="38" height="38" aria-hidden="true"><rect width="48" height="48" rx="9" fill="#109749"/><path d="M8 10c12 1 20 6 24 17-8 2-16-1-21-8-2-3-3-6-3-9Z" fill="#fff"/><path d="M40 10c-12 1-20 6-24 17 8 2 16-1 21-8 2-3 3-6 3-9Z" fill="#183e31"/><path d="M24 21v18" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="33" cy="17" r="2.6" fill="#fff"/></svg>';
+    return '<svg viewBox="0 0 48 48" width="42" height="42" aria-hidden="true"><rect x="1" y="1" width="46" height="46" rx="12" fill="#fff"/><path d="M9.5 13.5C20 13.7 28.1 19 30.9 30.6c-9.5 1.2-16.6-2.3-19.6-8.4-1.4-2.8-1.9-5.7-1.8-8.7Z" fill="#68c900"/><path d="M38.5 14.2c-8.9.3-15.2 4.8-17.7 15.2 7.9.8 13.7-2.3 16.2-7.7 1.2-2.5 1.6-5 1.5-7.5Z" fill="#071d13"/><circle cx="21.2" cy="27.5" r="3.1" fill="#fff"/></svg>';
   }
 
   // Shop-Script's public search route is stable. Reading form.action from the
@@ -217,6 +217,12 @@
     ["Многолетники", "assets/categories/perennials.png"],
     ["Декоративные злаки", "assets/categories/ornamental-grasses.png"]
   ].map(([label, image]) => findCategory(label, image));
+  categories.push({
+    label: "Организация мероприятий",
+    href: "https://deksad.ru/",
+    image: assetUrl("assets/categories/event-organization.png"),
+    external: true
+  });
   const products = getProducts();
   const hero = heroImage() || assetUrl("assets/categories/shrubs.png");
   const catalogHref = findLink(["Озеленение", "Каталог растений", "Каталог"], "/");
@@ -225,7 +231,9 @@
     improvement: findLink(["Благоустройство"], "/"),
     marketplace: findLink(["Торговая площадка"], "/"),
     housing: findLink(["Озеленение ЖК"], "/"),
-    nurseries: findLink(["Питомники", "Магазин"], "/"),
+    // A separate nurseries route does not exist yet. The marketplace is the
+    // live directory of nursery offers, so this link must never fall back to /.
+    nurseries: "/market/",
     landscape: findLink(["Ландшафтный дизайн"], "/"),
     care: findLink(["Уход и материалы"], "/"),
     sale: findLink(["Акции", "Наши специальные предложения"], "/"),
@@ -233,7 +241,8 @@
     about: findLink(["О проекте", "О компании"], "/about/"),
     favorites: findLink(["Избранное"], "/"),
     cart: findLink(["Корзина"], "/cart/"),
-    account: findLink(["Аккаунт", "Личный кабинет", "Войти"], "/my/")
+    account: findLink(["Аккаунт", "Личный кабинет", "Войти"], "/my/"),
+    events: "https://deksad.ru/"
   };
   const legal = {
     privacy: "https://onlyflora.webasyst.cloud/site/legal/personal-data-policy/",
@@ -243,7 +252,7 @@
   };
 
   const categoryCards = categories.map(item => `
-    <a class="of-category-card" href="${escapeHtml(item.href)}">
+    <a class="of-category-card" href="${escapeHtml(item.href)}"${item.external ? ' target="_blank" rel="noopener noreferrer"' : ""}>
       <img class="of-card-image" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.label)}" loading="lazy">
       <span class="of-category-title">${escapeHtml(item.label)}</span>
     </a>`).join("");
@@ -261,7 +270,7 @@
   root.innerHTML = `
     <div class="of-shell">
       <header class="of-topbar">
-        <a class="of-brand" href="/" aria-label="OnlyFlora — главная"><span class="of-brand-mark">${logoMark()}</span><span class="of-brand-word">Only<span>Flora</span></span></a>
+        <a class="of-brand" href="/" aria-label="OnlyFlora — главная"><span class="of-brand-mark">${logoMark()}</span><span class="of-brand-copy"><span class="of-brand-word">Only<span>Flora</span></span><small>Бедный не имеет тени</small></span></a>
         <form class="of-search" action="${escapeHtml(searchAction)}" method="get"><input type="search" name="${escapeHtml(searchName)}" placeholder="Поиск растений, питомников, товаров..." aria-label="Поиск" required><button type="submit" aria-label="Найти"></button></form>
         <a class="of-location" href="#" aria-label="Регион: Москва">Москва⌄</a>
         <nav class="of-actions" aria-label="Личный раздел">
@@ -278,6 +287,7 @@
         <a href="${escapeHtml(links.landscape)}">Ландшафтный дизайн</a>
         <a href="${escapeHtml(links.care)}">Уход и материалы</a>
         <a href="${escapeHtml(links.nurseries)}">Питомники</a>
+        <a href="${escapeHtml(links.events)}" target="_blank" rel="noopener noreferrer">Организация мероприятий</a>
         <a href="${escapeHtml(links.sale)}">Акции</a>
         <a href="${escapeHtml(links.blog)}">Блог</a>
         <a href="${escapeHtml(links.about)}">О проекте</a>

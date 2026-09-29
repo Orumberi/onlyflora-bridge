@@ -4,13 +4,13 @@ const money = value => new Intl.NumberFormat("ru-RU", { style: "currency", curre
 function notice(message, error = false) { $("notice").textContent = message; $("notice").classList.toggle("error", error); }
 function node(tag, text, className) { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (className) e.className = className; return e; }
 async function api(path, body) {
-  const response = await fetch(`./api/${path}`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessKey}` }, body: JSON.stringify(body), signal: AbortSignal.timeout(180000) });
+  const response = await fetch("./api/" + path, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + accessKey }, body: JSON.stringify(body), signal: AbortSignal.timeout(180000) });
   const result = await response.json();
   if (response.status === 401) { accessKey = ""; $("access").hidden = false; $("input-section").hidden = true; $("review").hidden = true; }
   if (!response.ok) throw new Error(result.error || "Не удалось выполнить запрос"); return result;
 }
 async function publicApi(path, body) {
-  const response = await fetch(`./api/${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(20000) });
+  const response = await fetch("./api/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(20000) });
   const result = await response.json();
   if (!response.ok) throw new Error(result.error || "Не удалось выполнить запрос");
   return result;
@@ -21,17 +21,17 @@ function setInputMode(mode) {
   inputMode = mode;
   for (const name of ["photo", "text"]) {
     const active = name === mode;
-    $(`${name}-tab`).classList.toggle("active", active);
-    $(`${name}-tab`).setAttribute("aria-selected", String(active));
-    $(`${name}-pane`).hidden = !active;
+    $(name + "-tab").classList.toggle("active", active);
+    $(name + "-tab").setAttribute("aria-selected", String(active));
+    $(name + "-pane").hidden = !active;
   }
   resetInput();
 }
 function showLines(result) {
   resetResult(); $("lines").replaceChildren(); $("warnings").textContent = result.warnings.join(" ");
   result.lines.forEach(line => {
-    const row = node("div", undefined, `line${line.uncertain ? " uncertain" : ""}`);
-    for (const [key, caption] of [["name", "Растение / сорт"], ["quantity", "Шт."], ["height", "Высота"], ["container", "Контейнер"]]) {
+    const row = node("div", undefined, "line" + (line.uncertain ? " uncertain" : ""));
+    for (const [key, caption] of [["name", "Растение / сорт"], ["quantity", "Шт."], ["height", "Высота"], ["girth", "Обхват"], ["container", "Контейнер"]]) {
       const label = node("label", caption), input = node("input"); input.dataset.field = key; input.value = line[key] ?? "";
       if (key === "quantity") { input.type = "number"; input.min = "1"; input.max = "100000"; input.step = "1"; }
       input.addEventListener("input", resetResult); label.append(input); row.append(label);
@@ -64,20 +64,24 @@ $("plan").addEventListener("click", () => run($("plan"), async () => {
   const current = [...$("lines").children].map(row => Object.fromEntries([...row.querySelectorAll("input")].map(input => [input.dataset.field, input.dataset.field === "quantity" ? Number(input.value) : input.value.trim()])));
   if (submitted !== JSON.stringify({ lines: current, strategy: $("strategy").value })) throw new Error("Список изменён во время подбора. Подтвердите его и повторите поиск.");
   lastPlan = result; $("result-title").textContent = result.complete ? "Подбор готов" : "Подобрана часть списка";
-  $("summary").textContent = `${money(result.totalKopecks)} · питомников: ${result.supplierCount} · без доставки`;
+  $("summary").textContent = money(result.totalKopecks) + " · питомников: " + result.supplierCount + " · без доставки";
   $("offers").replaceChildren();
   for (const row of result.rows) {
-    const card = node("article", undefined, "offer-row"); card.append(node("h3", `${row.request.name} · нужно ${row.request.quantity} шт.`));
-    for (const offer of row.allocations) card.append(node("div", `${offer.name} · ${offer.nursery}\n${offer.height} · ${offer.container} · ${offer.sku}\n${offer.quantity} шт. × ${money(offer.priceKopecks)} = ${money(offer.totalKopecks)}`, "offer"));
-    if (row.shortage) card.append(node("p", row.status === "needs_clarification" ? "Нужно уточнить растение или размер." : `Не подобрано: ${row.shortage} шт.`, "shortage"));
+    const requestedDetails = [row.request.height && "высота " + row.request.height, row.request.girth && "обхват " + row.request.girth, row.request.container].filter(Boolean).join(" · ");
+    const card = node("article", undefined, "offer-row"); card.append(node("h3", row.request.name + " · нужно " + row.request.quantity + " шт." + (requestedDetails ? " · " + requestedDetails : "")));
+    for (const offer of row.allocations) {
+      const offerDetails = [offer.height, offer.girth && "обхват " + offer.girth, offer.container, offer.sku].filter(Boolean).join(" · ");
+      card.append(node("div", offer.name + " · " + offer.nursery + "\n" + offerDetails + "\n" + offer.quantity + " шт. × " + money(offer.priceKopecks) + " = " + money(offer.totalKopecks), "offer"));
+    }
+    if (row.shortage) card.append(node("p", row.status === "needs_clarification" ? "Нужно уточнить растение или размер." : "Не подобрано: " + row.shortage + " шт.", "shortage"));
     if (row.alternatives.length) {
       const details = node("details"); details.append(node("summary", "Возможные варианты — не включены в сумму"));
-      for (const offer of row.alternatives) details.append(node("p", `${offer.name} · ${offer.nursery} · ${offer.height} · ${offer.container} · ${money(offer.priceKopecks)} · ${offer.reason}`));
+      for (const offer of row.alternatives) details.append(node("p", offer.name + " · " + offer.nursery + " · " + offer.height + (offer.girth ? " · обхват " + offer.girth : "") + " · " + offer.container + " · " + money(offer.priceKopecks) + " · " + offer.reason));
       details.append(node("p", "Чтобы выбрать вариант, укажите его название, размер и контейнер в списке выше и повторите подбор.")); card.append(details);
     }
     $("offers").append(card);
   }
-  $("notes").textContent = `${result.notes.join(" ")} Проверено: ${new Date(result.checkedAt).toLocaleString("ru-RU")}.`;
+  $("notes").textContent = result.notes.join(" ") + " Проверено: " + new Date(result.checkedAt).toLocaleString("ru-RU") + ".";
   $("result").hidden = false; notice(result.complete ? "Все строки подобраны по каталогу." : "Проверьте недостающие позиции и предложенные варианты.");
 }));
 $("strategy").addEventListener("change", resetResult);
@@ -92,15 +96,15 @@ uploadDrop.addEventListener("drop", event => {
   const file = event.dataTransfer?.files?.[0];
   if (!file) return;
   const transfer = new DataTransfer(); transfer.items.add(file); $("photo").files = transfer.files;
-  resetInput(); notice(`Выбран файл: ${file.name}`);
+  resetInput(); notice("Выбран файл: " + file.name);
 });
-$("photo").addEventListener("change", () => { const file = $("photo").files[0]; if (file) notice(`Выбран файл: ${file.name}`); });
+$("photo").addEventListener("change", () => { const file = $("photo").files[0]; if (file) notice("Выбран файл: " + file.name); });
 $("download").addEventListener("click", () => {
   if (!lastPlan) return;
-  const rows = [["Запрошено", "Нужно шт.", "Подобрано", "Питомник", "Высота", "Контейнер", "Артикул", "Количество", "Цена ₽", "Сумма ₽", "Не подобрано шт."]];
+  const rows = [["Запрошено", "Нужно шт.", "Запрошенная высота", "Запрошенный обхват", "Подобрано", "Питомник", "Высота", "Обхват", "Контейнер", "Артикул", "Количество", "Цена ₽", "Сумма ₽", "Не подобрано шт."]];
   for (const row of lastPlan.rows) {
-    for (const o of row.allocations) rows.push([row.request.name, row.request.quantity, o.name, o.nursery, o.height, o.container, o.sku, o.quantity, o.priceKopecks / 100, o.totalKopecks / 100, ""]);
-    if (row.shortage) rows.push([row.request.name, row.request.quantity, "Не подобрано", "", "", "", "", "", "", "", row.shortage]);
+    for (const o of row.allocations) rows.push([row.request.name, row.request.quantity, row.request.height, row.request.girth, o.name, o.nursery, o.height, o.girth, o.container, o.sku, o.quantity, o.priceKopecks / 100, o.totalKopecks / 100, ""]);
+    if (row.shortage) rows.push([row.request.name, row.request.quantity, row.request.height, row.request.girth, "Не подобрано", "", "", "", "", "", "", "", "", row.shortage]);
   }
   const csv = rows.map(row => row.map(value => { let text = String(value); if (/^[=+@\-\t\r]/.test(text)) text = "'" + text; return '"' + text.replaceAll('"', '""') + '"'; }).join(";")).join("\r\n");
   const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" })); const a = node("a"); a.href = url; a.download = "onlyflora-podbor.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);

@@ -16,6 +16,13 @@ export function heightRange(value = "") {
   return range[0] > 0 && range[1] >= range[0] ? range : null;
 }
 
+export function girthRange(value = "") {
+  const match = String(value).trim().replaceAll(",", ".").match(/^(\d+(?:\.\d+)?)(?:\s*[-–—]\s*(\d+(?:\.\d+)?))?\s*(?:см|cm)?$/i);
+  if (!match) return null;
+  const range = [Number(match[1]), Number(match[2] || match[1])];
+  return range[0] > 0 && range[1] >= range[0] ? range : null;
+}
+
 function containerName(value) {
   return String(value || "").toUpperCase().replaceAll("С", "C").replace(/\s/g, "");
 }
@@ -29,7 +36,12 @@ export function publicOffers(product) {
     const parts = modern ? [rawParts[1], rawParts[2], rawParts[0]] : rawParts;
     // The actual OnlyFlora master records encode the THREE variant fields here.
     // Product-level features are deliberately not used as variant fallbacks.
-    const range = heightRange(parts[0]);
+    const size = parts[0] || "";
+    const girthMatch = size.match(/(?:обхват)(?:\s+ствола)?\s*(\d+(?:[.,]\d+)?(?:\s*[-–—]\s*\d+(?:[.,]\d+)?)?\s*(?:см|cm)?)(?=\s|[,;—–-]|$)/i);
+    const height = size.replace(girthMatch?.[0] || "", "").replace(/[,;\-–—\s]+$/g, "").trim();
+    const girth = girthMatch?.[1].trim() || "";
+    const range = heightRange(height);
+    const parsedGirthRange = girth ? girthRange(girth) : null;
     const container = containerName(parts[1]);
     const nursery = parts.slice(2).join(", ");
     const count = sku.count === null || sku.count === undefined ? null : Number(sku.count);
@@ -42,7 +54,7 @@ export function publicOffers(product) {
       || Number(product.count_denominator ?? 1) !== 1 || (count !== null && (!Number.isFinite(count) || count < 0))) return [];
     return [{
       productId: String(product.id), skuId: String(sku.id), sku: String(sku.sku || ""),
-      name: product.name, height: parts[0], range, container, nursery,
+      name: product.name, height, range, girth, girthRange: parsedGirthRange, container, nursery,
       priceKopecks: Math.round(price * 100), count: count === null ? null : Math.floor(count),
     }];
   });
@@ -67,7 +79,8 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
     const previous = unique.get(key);
     if (!previous) unique.set(key, offer);
     else if (previous.priceKopecks !== offer.priceKopecks || previous.container !== offer.container
-      || normalizeName(previous.name) !== normalizeName(offer.name) || String(previous.range) !== String(offer.range)) conflicts.add(key);
+      || normalizeName(previous.name) !== normalizeName(offer.name) || String(previous.range) !== String(offer.range)
+      || String(previous.girthRange) !== String(offer.girthRange)) conflicts.add(key);
     else previous.count = previous.count === null || offer.count === null ? null : Math.min(previous.count, offer.count);
   }
   const allOffers = [...unique].filter(([key]) => !conflicts.has(key)).map(([, offer]) => offer);
@@ -77,11 +90,13 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
     const matchingProducts = products.filter(p => nameMatches(line, p));
     const names = new Set(matchingProducts.map(p => normalizeName(p.name)));
     const wantedRange = line.height ? heightRange(line.height) : null;
-    const needsClarification = names.size > 1 || Boolean(line.height && !wantedRange);
+    const wantedGirthRange = line.girth ? girthRange(line.girth) : null;
+    const needsClarification = names.size > 1 || Boolean(line.height && !wantedRange) || Boolean(line.girth && !wantedGirthRange);
     const productIds = new Set(matchingProducts.map(p => String(p.id)));
     const fitting = allOffers.filter(o => productIds.has(o.productId)
       && (!line.container || o.container === containerName(line.container))
-      && (!wantedRange || (o.range[0] === wantedRange[0] && o.range[1] === wantedRange[1])));
+      && (!wantedRange || (o.range[0] === wantedRange[0] && o.range[1] === wantedRange[1]))
+      && (!wantedGirthRange || (o.girthRange && o.girthRange[0] === wantedGirthRange[0] && o.girthRange[1] === wantedGirthRange[1])));
     const candidates = fitting.filter(o => (remaining.get(o.skuId) || 0) > 0);
     const allocations = [];
     let shortage = line.quantity;
@@ -108,7 +123,9 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
     const allocatedIds = new Set(allocations.map(o => o.skuId));
     const alternatives = shortage ? allOffers.filter(o => !allocatedIds.has(o.skuId)
       && (productIds.has(o.productId) || normalizeName(o.name).split(" ")[0] === normalizeName(line.name).split(" ")[0]))
-      .slice(0, 8).map(o => ({ ...o, reason: o.count === null ? "Остаток не подтверждён" : "Проверьте название, сорт, размер и контейнер" })) : [];
+      .slice(0, 8).map(o => ({ ...o, reason: wantedGirthRange && !o.girthRange
+        ? "Обхват предложения не указан — подтвердите у питомника"
+        : o.count === null ? "Остаток не подтверждён" : "Проверьте название, сорт, высоту, обхват и контейнер" })) : [];
     return { request: line, allocations, shortage, alternatives,
       status: needsClarification ? "needs_clarification" : shortage ? (allocations.length ? "partial" : "not_found") : "matched" };
   });
@@ -118,7 +135,7 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
     complete: complete && rows.every(r => r.shortage === 0),
     notes: ["Доставка не включена. Подбор не резервирует остатки.",
       ...(conflicts.size ? ["Обнаружены противоречивые дубли предложений; они исключены из автоматического подбора."] : []),
-      "Автоподбор использует предложения с однозначно указанными питомником, диапазоном высоты и контейнером. Неограниченный складской остаток требует подтверждения питомника.",
+      "Автоподбор использует предложения с однозначно указанными питомником, диапазоном высоты и контейнером. Запрошенный обхват должен быть указан в предложении и совпадать. Неограниченный складской остаток требует подтверждения питомника.",
       ...(strategy === "suppliers" ? ["Число поставщиков сокращается эвристически; глобальный минимум не гарантируется."] : []),
       ...(!complete ? ["Проверена только часть результатов поиска; подбор не полный."] : [])] };
 }

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import express from "express";
 import { buildPlan, heightRange, nameMatches, publicOffers } from "../catalog.js";
-import { parseText } from "../schema.js";
+import { parseText, sanitizeExtraction } from "../schema.js";
 import { recognizePhoto } from "../vision.js";
 import { EgorCatalog } from "../search.js";
 import { createEgorRouter } from "../router.js";
@@ -81,6 +81,25 @@ test("text parser does not read the upper height as quantity", () => {
   assert.equal(result.lines[0].container, "C3"); assert.equal(result.lines[0].name, "Туя Смарагд");
   assert.equal(result.lines[1].quantity, null);
 });
+test("text parser removes numbered prefixes and cities from a real customer request", () => {
+  const result = parseText("Запрос:\n1.Берёза бородавчатая(повислая, плакучая) 1,5-2,0 м 15 шт\n2. Можжевельник пфитцериана Блю энд Голд 0,9 м 10 шт\n3. Юкка садовая 0.9 м 4 шт\nБелгород.");
+  assert.deepEqual(result.lines.map(row => row.name), [
+    "Берёза бородавчатая(повислая, плакучая)",
+    "Можжевельник пфитцериана Блю энд Голд",
+    "Юкка садовая",
+  ]);
+  assert.deepEqual(result.lines.map(row => row.quantity), [15, 10, 4]);
+  assert.deepEqual(result.lines.map(row => row.height), ["1,5-2,0 м", "0,9 м", "0.9 м"]);
+  assert.match(result.warnings.join(" "), /служебные строки/);
+});
+test("photo post-processing removes numbering and locations", () => {
+  const result = sanitizeExtraction({ warnings: [], lines: [
+    { name: "1. Туя Смарагд", quantity: 10, height: "", girth: "", container: "", uncertain: false, note: "" },
+    { name: "Москва", quantity: null, height: "", girth: "", container: "", uncertain: true, note: "" },
+  ] });
+  assert.equal(result.lines.length, 1); assert.equal(result.lines[0].name, "Туя Смарагд");
+  assert.match(result.warnings.join(" "), /населённые пункты/);
+});
 test("catalog pagination includes later offers and encodes an authenticated GET", async () => {
   const calls = [];
   const catalog = new EgorCatalog({ token: "test-catalog-token", fetchImpl: async (url, options) => {
@@ -107,6 +126,21 @@ test("photo refuses incomplete response and does not expose raw provider data", 
   } }), /не распознано полностью/);
   assert.equal(request.store, false); assert.equal(request.text.format.strict, true);
   assert.equal(request.input[0].content[1].image_url, image);
+});
+test("photo retries an unavailable configured model and sanitizes the result", async () => {
+  const image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6nXcAAAAASUVORK5CYII=";
+  const models = [];
+  const result = await recognizePhoto(image, { apiKey: "private-key", model: "wrong-model", fetchImpl: async (_url, options) => {
+    const request = JSON.parse(options.body); models.push(request.model);
+    if (models.length === 1) return new Response(JSON.stringify({ error: { type: "model_not_found" } }), { status: 404 });
+    const output = JSON.stringify({ warnings: [], lines: [
+      { name: "1. Туя Смарагд", quantity: 2, height: "60–80 см", girth: "", container: "C3", uncertain: false, note: "" },
+      { name: "Белгород", quantity: null, height: "", girth: "", container: "", uncertain: true, note: "" },
+    ] });
+    return new Response(JSON.stringify({ status: "completed", output: [{ content: [{ type: "output_text", text: output }] }] }));
+  } });
+  assert.deepEqual(models, ["wrong-model", "gpt-4o-mini"]);
+  assert.equal(result.lines.length, 1); assert.equal(result.lines[0].name, "Туя Смарагд");
 });
 test("enabled assistant searches the catalog without asking visitors for a password", async t => {
   const app = express(); let calls = 0;

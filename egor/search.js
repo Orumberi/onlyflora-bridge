@@ -19,7 +19,7 @@ export class EgorCatalog {
     return data;
   }
   async find(lines) {
-    const terms = [...new Set(lines.map(line => normalizeName(line.name).split(" ")[0]))];
+    const terms = [...new Set(lines.map(line => normalizeName(line.name).split(" ").find(token => /\p{L}/u.test(token))).filter(Boolean))];
     const products = new Map(); let complete = true, requests = 0;
     const deadline = Date.now() + 90000;
     // Bounded work per request; if truncated, the UI explicitly says so.

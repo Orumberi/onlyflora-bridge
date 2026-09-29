@@ -6,6 +6,14 @@
   <meta name="robots" content="noindex,nofollow">
   <title>Егор Григорьевич S — подбор растений</title>
   <link rel="stylesheet" href="./style.css">
+  <style>
+    .line { grid-template-columns: minmax(150px,1.7fr) 66px minmax(84px,1fr) minmax(76px,.85fr) 86px 28px; }
+    @media (max-width:540px) {
+      .line { grid-template-columns: 1fr 1fr; }
+      .line label:first-child { grid-column:1/-1; }
+      .line button { grid-column:2; justify-self:end; }
+    }
+  </style>
   <script src="./app.js" defer></script>
 </head>
 <body>

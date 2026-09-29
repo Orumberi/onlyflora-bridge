@@ -137,7 +137,7 @@
 
   const path = location.pathname.replace(/\/+$/, "") || "/";
   const homePaths = new Set(["/", "/site"]);
-  if (!homePaths.has(path)) return;
+  const isHome = homePaths.has(path);
 
   const normalize = value => String(value || "").replace(/\s+/g, " ").trim().toLocaleLowerCase("ru");
   const oldBody = document.body;
@@ -167,6 +167,12 @@
   }
 
   function heroImage() {
+    const openingTitle = [...document.querySelectorAll(".main_wrapper *")]
+      .find(element => normalize(element.textContent) === "открытие");
+    const openingSlide = openingTitle?.closest("li");
+    const openingBackground = openingSlide ? getComputedStyle(openingSlide).backgroundImage : "";
+    const openingUrl = openingBackground?.match(/url\(["']?(.*?)["']?\)/)?.[1];
+    if (openingUrl) return openingUrl;
     const preferred = [...document.images].filter(img => {
       const src = img.currentSrc || img.src || "";
       const width = img.naturalWidth || img.width;
@@ -239,9 +245,9 @@
     image: assetUrl("assets/categories/event-organization.png"),
     external: true
   });
-  const products = getProducts();
-  const hero = heroImage() || assetUrl("assets/categories/shrubs.png");
-  const catalogHref = findLink(["Озеленение", "Каталог растений", "Каталог"], "/");
+  const products = isHome ? getProducts() : [];
+  const hero = assetUrl("assets/marketplace-hero.jpg");
+  const catalogHref = findLink(["Торговая площадка"], "/category/market/");
   const links = {
     greenery: findLink(["Озеленение", "Каталог растений"], catalogHref),
     improvement: findLink(["Благоустройство"], "/"),
@@ -269,14 +275,9 @@
 
   const categoryCards = categories.map(item => `
     <a class="of-category-card" href="${escapeHtml(item.href)}"${item.external ? ' target="_blank" rel="noopener noreferrer"' : ""}>
-      <img class="of-card-image" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.label)}" loading="lazy">
+      <img class="of-card-image" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.label)}" loading="eager" fetchpriority="high" decoding="async">
       <span class="of-category-title">${escapeHtml(item.label)}</span>
     </a>`).join("");
-
-  const greeneryMenu = [
-    { label: "Все растения", href: links.greenery },
-    ...categories.filter(item => !item.external)
-  ].map(item => `<a href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`).join("");
 
   const productCards = products.map(item => `
     <a class="of-product-card" href="${escapeHtml(item.href)}">
@@ -288,6 +289,7 @@
 
   const root = document.createElement("div");
   root.id = "onlyflora-modern-home";
+  if (!isHome) root.className = "of-modern-inner";
   root.innerHTML = `
     <div class="of-shell">
       <header class="of-topbar">
@@ -302,7 +304,6 @@
       </header>
       <div class="of-nav-wrap">
         <nav class="of-nav" aria-label="Основное меню">
-          <button class="of-nav-greenery" type="button" aria-expanded="false" aria-controls="of-greenery-menu">Озеленение<span aria-hidden="true">⌄</span></button>
           <a href="${escapeHtml(links.improvement)}">Благоустройство</a>
           <a href="${escapeHtml(links.marketplace)}">Торговая площадка</a>
           <a href="${escapeHtml(links.housing)}">Озеленение ЖК</a>
@@ -315,10 +316,10 @@
           <a href="${escapeHtml(links.about)}">О проекте</a>
           <span class="of-preview-badge">Only Test — предпросмотр</span>
         </nav>
-        <div class="of-nav-dropdown" id="of-greenery-menu" hidden>${greeneryMenu}</div>
       </div>
+      ${isHome ? `
       <section class="of-hero"${hero ? ` style="--of-hero-image:url('${escapeHtml(hero)}')"` : ""}>
-        <div class="of-hero-copy"><h1>Растения<br>для красивой жизни</h1><p>Тысячи растений от проверенных питомников по всей России</p><a class="of-primary" href="${escapeHtml(catalogHref)}">Перейти в каталог</a></div>
+        <div class="of-hero-copy"><h1>Торговая площадка</h1><p>Предложения питомников и садовых центров со всей России</p><a class="of-primary" href="${escapeHtml(links.marketplace)}">Открыть торговую площадку</a></div>
       </section>
       <section class="of-benefits" aria-label="Преимущества OnlyFlora">
         <div class="of-benefit"><span class="of-benefit-icon">♧</span><span><strong>50+ садовых центров</strong>в одном каталоге</span></div>
@@ -327,10 +328,10 @@
         <div class="of-benefit"><span class="of-benefit-icon">♧</span><span><strong>Растения</strong>для любого проекта</span></div>
       </section>
       <section class="of-section">
-        <div class="of-section-head"><h2>Категории растений</h2><a class="of-section-link" href="${escapeHtml(catalogHref)}">Смотреть все →</a></div>
+        <div class="of-section-head"><h2>Категории</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}">Смотреть все →</a></div>
         <div class="of-category-grid">${categoryCards}</div>
       </section>
-      ${products.length ? `<section class="of-section"><div class="of-section-head"><h2>Популярные растения</h2><a class="of-section-link" href="${escapeHtml(catalogHref)}">В каталог →</a></div><div class="of-product-grid">${productCards}</div></section>` : ""}
+      ${products.length ? `<section class="of-section"><div class="of-section-head"><h2>Популярные растения</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}">В каталог →</a></div><div class="of-product-grid">${productCards}</div></section>` : ""}
       <footer class="of-footer">
         <div class="of-footer-brand">Only<span>Flora</span><small>Бедный не имеет тени</small></div>
         <nav aria-label="Юридическая информация">
@@ -341,10 +342,11 @@
         </nav>
         <a class="of-footer-mail" href="mailto:agro@onlyflora.ru">agro@onlyflora.ru</a>
       </footer>
+      ` : ""}
     </div>`;
 
   oldBody.prepend(root);
-  oldBody.classList.add("of-modern-active");
+  oldBody.classList.add(isHome ? "of-modern-active" : "of-modern-header-active");
 
   const searchForm = root.querySelector(".of-search");
   searchForm?.addEventListener("submit", () => {
@@ -352,24 +354,5 @@
     if (input instanceof HTMLInputElement) input.value = correctKeyboardLayout(input.value.trim());
   });
 
-  const greeneryButton = root.querySelector(".of-nav-greenery");
-  const greeneryDropdown = root.querySelector(".of-nav-dropdown");
-  const closeGreeneryMenu = () => {
-    if (!greeneryButton || !greeneryDropdown) return;
-    greeneryButton.setAttribute("aria-expanded", "false");
-    greeneryDropdown.hidden = true;
-  };
-  greeneryButton?.addEventListener("click", event => {
-    event.stopPropagation();
-    const open = greeneryButton.getAttribute("aria-expanded") !== "true";
-    greeneryButton.setAttribute("aria-expanded", String(open));
-    greeneryDropdown.hidden = !open;
-  });
-  document.addEventListener("click", event => {
-    if (!root.querySelector(".of-nav-wrap")?.contains(event.target)) closeGreeneryMenu();
-  });
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape") closeGreeneryMenu();
-  });
   document.dispatchEvent(new CustomEvent("onlyflora:modern-ready"));
 })();

@@ -15,6 +15,19 @@ body.of-modern-active {
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
 }
 
+body.of-modern-header-active {
+  margin: 0 !important;
+  background: var(--of-white) !important;
+  color: var(--of-ink) !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
+}
+
+body.of-modern-header-active > .main_wrapper > .header_top_banner,
+body.of-modern-header-active > .main_wrapper > .header,
+body.of-modern-header-active > .main_wrapper > .top-slider-holder {
+  display: none !important;
+}
+
 body.of-modern-active > .main_wrapper,
 body.of-modern-active > .header_holder,
 body.of-modern-active > .header,
@@ -33,6 +46,10 @@ body.of-modern-active > footer {
   min-height: 100vh;
   background: #fff;
   color: var(--of-ink);
+}
+
+#onlyflora-modern-home.of-modern-inner {
+  min-height: 0;
 }
 
 .of-shell {

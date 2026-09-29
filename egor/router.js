@@ -1,6 +1,5 @@
 import express from "express";
 import { rateLimit } from "express-rate-limit";
-import { timingSafeEqual, createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { planSchema, parseText } from "./schema.js";
 import { recognizePhoto } from "./vision.js";
@@ -9,10 +8,9 @@ import { EgorCatalog } from "./search.js";
 
 export function createEgorRouter({ env = process.env, catalog, recognize = recognizePhoto } = {}) {
   const router = express.Router();
-  const previewKey = env.EGOR_PREVIEW_KEY || "";
   const enabled = env.EGOR_ENABLED === "true";
   const catalogClient = catalog || new EgorCatalog({ accountUrl: env.WEBASYST_ACCOUNT_URL || "https://onlyflora.ru", token: env.EGOR_WEBASYST_TOKEN });
-  const ready = enabled && previewKey.length >= 32 && Boolean(catalog || env.EGOR_WEBASYST_TOKEN);
+  const ready = enabled && Boolean(catalog || env.EGOR_WEBASYST_TOKEN);
   const photoReady = Boolean(env.EGOR_OPENAI_KEY && env.EGOR_OPENAI_MODEL);
   let busy = false;
   const publicDir = fileURLToPath(new URL("./public/", import.meta.url));
@@ -39,14 +37,6 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
   });
   router.use("/api", (req, res, next) => {
     if (!ready) return res.status(503).json({ error: "Тестовый помощник ещё не подключён к каталогу." });
-    const token = String(req.headers.authorization || "").replace(/^Bearer /, "");
-    let supplied = token;
-    if (token.startsWith("u:")) {
-      try { supplied = decodeURIComponent(token.slice(2)); }
-      catch { return res.status(401).json({ error: "Нужен код доступа к тестовой версии." }); }
-    }
-    const digest = s => createHash("sha256").update(s).digest();
-    if (!timingSafeEqual(digest(supplied), digest(previewKey))) return res.status(401).json({ error: "Нужен код доступа к тестовой версии." });
     next();
   });
   router.use("/api", (req, res, next) => {

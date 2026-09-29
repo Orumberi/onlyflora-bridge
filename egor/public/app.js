@@ -1,6 +1,8 @@
 const $ = id => document.getElementById(id);
 let lastPlan = null, inputMode = "photo", catalogReady = false;
 const money = value => new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" }).format(value / 100);
+const initials = value => String(value || "Р").trim().split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
+const parentOrigin = (() => { try { return new URL(document.referrer).origin; } catch { return "*"; } })();
 function notice(message, error = false) { $("notice").textContent = message; $("notice").classList.toggle("error", error); }
 function node(tag, text, className) { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (className) e.className = className; return e; }
 async function api(path, body) {
@@ -63,26 +65,50 @@ $("plan").addEventListener("click", () => run($("plan"), async () => {
   const current = [...$("lines").children].map(row => Object.fromEntries([...row.querySelectorAll("input")].map(input => [input.dataset.field, input.dataset.field === "quantity" ? Number(input.value) : input.value.trim()])));
   if (submitted !== JSON.stringify({ lines: current, strategy: $("strategy").value })) throw new Error("Список изменён во время подбора. Подтвердите его и повторите поиск.");
   lastPlan = result; $("result-title").textContent = result.complete ? "Подбор готов" : "Подобрана часть списка";
-  $("summary").textContent = money(result.totalKopecks) + " · питомников: " + result.supplierCount + " · без доставки";
-  $("offers").replaceChildren();
+  $("summary").textContent = money(result.totalKopecks);
+  $("offers").replaceChildren(); $("alternatives").replaceChildren();
+  let alternativeCount = 0;
   for (const row of result.rows) {
     const requestedDetails = [row.request.height && "высота " + row.request.height, row.request.girth && "обхват " + row.request.girth, row.request.container].filter(Boolean).join(" · ");
-    const card = node("article", undefined, "offer-row"); card.append(node("h3", row.request.name + " · нужно " + row.request.quantity + " шт." + (requestedDetails ? " · " + requestedDetails : "")));
+    const card = node("article", undefined, "offer-row");
+    const requestHead = node("div", undefined, "request-head");
+    const requestText = node("div"); requestText.append(node("h3", row.request.name), node("p", "Нужно: " + row.request.quantity + " шт." + (requestedDetails ? " · " + requestedDetails : "")));
+    requestHead.append(node("span", initials(row.request.name), "plant-thumb"), requestText); card.append(requestHead);
     for (const offer of row.allocations) {
       const offerDetails = [offer.height, offer.girth && "обхват " + offer.girth, offer.container, offer.sku].filter(Boolean).join(" · ");
-      card.append(node("div", offer.name + " · " + offer.nursery + "\n" + offerDetails + "\n" + offer.quantity + " шт. × " + money(offer.priceKopecks) + " = " + money(offer.totalKopecks), "offer"));
+      const item = node("div", undefined, "offer");
+      const description = node("div", undefined, "offer-description"); description.append(node("strong", offer.name), node("span", offer.nursery), node("small", offerDetails));
+      description.append(node("span", "В наличии: " + (offer.count ?? "уточнить"), "stock"));
+      const figures = node("div", undefined, "offer-figures"); figures.append(node("strong", money(offer.priceKopecks)), node("span", offer.quantity + " шт."), node("small", money(offer.totalKopecks)));
+      item.append(description, figures); card.append(item);
     }
     if (row.shortage) card.append(node("p", row.status === "needs_clarification" ? "Нужно уточнить растение или размер." : "Не подобрано: " + row.shortage + " шт.", "shortage"));
     if (row.alternatives.length) {
-      const details = node("details"); details.append(node("summary", "Возможные варианты — не включены в сумму"));
-      for (const offer of row.alternatives) details.append(node("p", offer.name + " · " + offer.nursery + " · " + offer.height + (offer.girth ? " · обхват " + offer.girth : "") + " · " + offer.container + " · " + money(offer.priceKopecks) + " · " + offer.reason));
-      details.append(node("p", "Чтобы выбрать вариант, укажите его название, размер и контейнер в списке выше и повторите подбор.")); card.append(details);
+      for (const offer of row.alternatives) {
+        alternativeCount++;
+        const alt = node("article", undefined, "alternative"); alt.append(node("span", initials(offer.name), "plant-thumb small-thumb"));
+        const text = node("div"); text.append(node("strong", offer.name), node("span", offer.nursery), node("small", [offer.height, offer.girth && "обхват " + offer.girth, offer.container].filter(Boolean).join(" · ")), node("b", money(offer.priceKopecks))); alt.append(text);
+        $("alternatives").append(alt);
+      }
     }
     $("offers").append(card);
   }
+  $("alternatives-section").hidden = !alternativeCount;
   $("notes").textContent = result.notes.join(" ") + " Проверено: " + new Date(result.checkedAt).toLocaleString("ru-RU") + ".";
   $("result").hidden = false; notice(result.complete ? "Все строки подобраны по каталогу." : "Проверьте недостающие позиции и предложенные варианты.");
 }));
+$("add-cart").addEventListener("click", () => {
+  if (!lastPlan) return;
+  const items = lastPlan.rows.flatMap(row => row.allocations.map(offer => ({ skuId: offer.skuId, quantity: offer.quantity, name: offer.name })));
+  if (!items.length) return notice("Нет подобранных товаров для добавления.", true);
+  window.parent.postMessage({ type: "onlyflora-egor-cart", items }, parentOrigin);
+  notice("Передаю выбранные предложения в корзину…");
+});
+window.addEventListener("message", event => {
+  if (parentOrigin !== "*" && event.origin !== parentOrigin) return;
+  if (event.data?.type !== "onlyflora-egor-cart-result") return;
+  notice(event.data.ok ? "Выбранные предложения добавлены в корзину." : "Не удалось добавить товары автоматически. Скачайте подбор и отправьте менеджеру.", !event.data.ok);
+});
 $("strategy").addEventListener("change", resetResult);
 function resetInput() { resetResult(); $("review").hidden = true; }
 $("photo").addEventListener("change", resetInput); $("list").addEventListener("input", resetInput);

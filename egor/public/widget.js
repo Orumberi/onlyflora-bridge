@@ -43,6 +43,19 @@
   }
   launcher.addEventListener("click", openPanel); close.addEventListener("click", closePanel); backdrop.addEventListener("click", closePanel);
   document.addEventListener("keydown", event => { if (event.key === "Escape" && panel.classList.contains("open")) closePanel(); });
+  window.addEventListener("message", async event => {
+    if (event.source !== frame.contentWindow || event.data?.type !== "onlyflora-egor-cart") return;
+    try {
+      for (const item of event.data.items || []) {
+        const body = new URLSearchParams({ sku_id: String(item.skuId), quantity: String(item.quantity) });
+        const response = await fetch("/cart/add/", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8", "X-Requested-With": "XMLHttpRequest" }, body });
+        if (!response.ok) throw new Error("cart");
+      }
+      frame.contentWindow.postMessage({ type: "onlyflora-egor-cart-result", ok: true }, endpoint.origin);
+    } catch {
+      frame.contentWindow.postMessage({ type: "onlyflora-egor-cart-result", ok: false }, endpoint.origin);
+    }
+  });
   panel.append(close, frame); root.append(style, launcher, backdrop, panel); document.body.append(host);
   if (new URLSearchParams(location.search).get("egor_open") === "1") requestAnimationFrame(openPanel);
 })();

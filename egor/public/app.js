@@ -1,15 +1,11 @@
 const $ = id => document.getElementById(id);
-let accessKey = "", lastPlan = null, inputMode = "photo", catalogReady = false;
+let lastPlan = null, inputMode = "photo", catalogReady = false;
 const money = value => new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" }).format(value / 100);
 function notice(message, error = false) { $("notice").textContent = message; $("notice").classList.toggle("error", error); }
 function node(tag, text, className) { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (className) e.className = className; return e; }
 async function api(path, body) {
-  // Header values must be ISO-8859-1. Prefix and percent-encode the UTF-8
-  // preview code so Russian passwords work in every browser.
-  const authorization = "Bearer u:" + encodeURIComponent(accessKey);
-  const response = await fetch("./api/" + path, { method: "POST", headers: { "Content-Type": "application/json", Authorization: authorization }, body: JSON.stringify(body), signal: AbortSignal.timeout(180000) });
+  const response = await fetch("./api/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(180000) });
   const result = await response.json();
-  if (response.status === 401) { accessKey = ""; $("access").hidden = false; $("input-section").hidden = true; $("review").hidden = true; }
   if (!response.ok) throw new Error(result.error || "Не удалось выполнить запрос"); return result;
 }
 async function publicApi(path, body) {
@@ -44,7 +40,6 @@ function showLines(result) {
   });
   $("review").hidden = false; notice(result.lines.length ? "Проверьте распознанный список ниже." : "Растения не найдены. Попробуйте другое фото или текст.", !result.lines.length);
 }
-$("unlock").addEventListener("click", () => { accessKey = $("key").value.trim(); if (!accessKey) return notice("Введите код тестовой версии.", true); $("key").value = ""; $("access").hidden = true; $("input-section").hidden = false; notice("Можно загрузить фото или вставить список."); });
 $("extract").addEventListener("click", () => run($("extract"), async () => {
   const file = inputMode === "photo" ? $("photo").files[0] : null;
   const text = inputMode === "text" ? $("list").value.trim() : "";
@@ -121,8 +116,9 @@ fetch("./status", { signal: AbortSignal.timeout(10000) }).then(r => r.json()).th
     setInputMode("text");
     return notice("Текстовый список уже работает. Подбор по остаткам и фото появится после подключения серверного доступа к каталогу.");
   }
-  $("access").hidden = false; $("photo").disabled = !status.photoReady;
-  notice(status.photoReady ? "Тестовая версия помощника." : "Пока доступен список текстом. Распознавание фото ещё не подключено.");
+  $("input-section").hidden = false; $("photo").disabled = !status.photoReady;
+  if (!status.photoReady) setInputMode("text");
+  notice(status.photoReady ? "Загрузите фото или вставьте список растений." : "Пока доступен список текстом. Распознавание фото ещё не подключено.");
 }).catch(() => {
   $("input-section").hidden = false;
   $("photo").disabled = true;

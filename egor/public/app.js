@@ -4,7 +4,10 @@ const money = value => new Intl.NumberFormat("ru-RU", { style: "currency", curre
 function notice(message, error = false) { $("notice").textContent = message; $("notice").classList.toggle("error", error); }
 function node(tag, text, className) { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (className) e.className = className; return e; }
 async function api(path, body) {
-  const response = await fetch("./api/" + path, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + accessKey }, body: JSON.stringify(body), signal: AbortSignal.timeout(180000) });
+  // Header values must be ISO-8859-1. Prefix and percent-encode the UTF-8
+  // preview code so Russian passwords work in every browser.
+  const authorization = "Bearer u:" + encodeURIComponent(accessKey);
+  const response = await fetch("./api/" + path, { method: "POST", headers: { "Content-Type": "application/json", Authorization: authorization }, body: JSON.stringify(body), signal: AbortSignal.timeout(180000) });
   const result = await response.json();
   if (response.status === 401) { accessKey = ""; $("access").hidden = false; $("input-section").hidden = true; $("review").hidden = true; }
   if (!response.ok) throw new Error(result.error || "Не удалось выполнить запрос"); return result;

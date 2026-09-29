@@ -108,17 +108,17 @@ test("photo refuses incomplete response and does not expose raw provider data", 
   assert.equal(request.store, false); assert.equal(request.text.format.strict, true);
   assert.equal(request.input[0].content[1].image_url, image);
 });
-test("HTTP preview is closed by default and refuses unauthenticated catalog access", async t => {
+test("enabled assistant searches the catalog without asking visitors for a password", async t => {
   const app = express(); let calls = 0;
-  const env = { EGOR_ENABLED: "true", EGOR_PREVIEW_KEY: "p".repeat(32) };
+  const env = { EGOR_ENABLED: "true" };
   app.use("/egor", createEgorRouter({ env, catalog: { find: async () => { calls++; return { products: [product], complete: true }; } } }));
   const server = app.listen(0, "127.0.0.1"); await new Promise(resolve => server.on("listening", resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
   const base = `http://127.0.0.1:${server.address().port}/egor`;
-  const noAuth = await fetch(base + "/api/plan", { method: "POST" }); assert.equal(noAuth.status, 401); assert.equal(calls, 0);
-  const response = await fetch(base + "/api/plan", { method: "POST", headers: { Authorization: "Bearer " + env.EGOR_PREVIEW_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ lines: [line()], confirmed: true }) });
+  const response = await fetch(base + "/api/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lines: [line()], confirmed: true }) });
   assert.equal(response.status, 200); assert.equal((await response.json()).totalKopecks, 3187500); assert.equal(calls, 1);
-  const page = await fetch(base + "/"); assert.equal(page.status, 200); assert.match(await page.text(), /Егор Григорьевич S/);
+  const page = await fetch(base + "/"); const html = await page.text();
+  assert.equal(page.status, 200); assert.match(html, /Егор Григорьевич S/); assert.doesNotMatch(html, /Код доступа|id="access"/);
 });
 test("disabled preview cannot call upstream services", async t => {
   const app = express(); app.use("/egor", createEgorRouter({ env: {} }));

@@ -91,10 +91,11 @@ async function initDb() {
         updated_at timestamptz NOT NULL DEFAULT now()
       );
 
-      INSERT INTO site_content(id, data)
-      VALUES (1, $1::jsonb)
-      ON CONFLICT (id) DO NOTHING;
-    `, [JSON.stringify(defaultContent)]);
+    `);
+    await pool.query(
+      "INSERT INTO site_content(id, data) VALUES (1, $1::jsonb) ON CONFLICT (id) DO NOTHING",
+      [JSON.stringify(defaultContent)]
+    );
     dbReady = true;
     dbError = null;
   } catch (err) {
@@ -155,7 +156,7 @@ function cleanText(v, max = 5000) {
 }
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, database: dbReady, databaseError: dbReady ? null : dbError });
+  res.status(dbReady ? 200 : 503).json({ ok: dbReady, database: dbReady, databaseError: dbReady ? null : dbError });
 });
 
 app.get("/api/content", dbGuard, async (_req, res) => {
@@ -383,7 +384,10 @@ app.delete("/api/admin/providers/:id", requireAdmin, dbGuard, async (req, res) =
 
 app.get("/admin", (_req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/admin/", (_req, res) => res.sendFile(path.join(__dirname, "admin.html")));
-app.use(express.static(__dirname, { index: false, maxAge: "10m" }));
+app.use("/assets", express.static(path.join(__dirname, "assets"), { maxAge: "10m" }));
+for (const filename of ["styles.css", "script.js", "robots.txt", "sitemap.xml"]) {
+  app.get(`/${filename}`, (_req, res) => res.sendFile(path.join(__dirname, filename)));
+}
 app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
 
 app.use((err, _req, res, _next) => {

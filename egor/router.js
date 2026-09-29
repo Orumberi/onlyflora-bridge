@@ -39,7 +39,12 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
   });
   router.use("/api", (req, res, next) => {
     if (!ready) return res.status(503).json({ error: "Тестовый помощник ещё не подключён к каталогу." });
-    const supplied = String(req.headers.authorization || "").replace(/^Bearer /, "");
+    const token = String(req.headers.authorization || "").replace(/^Bearer /, "");
+    let supplied = token;
+    if (token.startsWith("u:")) {
+      try { supplied = decodeURIComponent(token.slice(2)); }
+      catch { return res.status(401).json({ error: "Нужен код доступа к тестовой версии." }); }
+    }
     const digest = s => createHash("sha256").update(s).digest();
     if (!timingSafeEqual(digest(supplied), digest(previewKey))) return res.status(401).json({ error: "Нужен код доступа к тестовой версии." });
     next();

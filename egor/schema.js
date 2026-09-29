@@ -22,7 +22,9 @@ export const extractionSchema = z.object({
 export function isServiceLine(value) {
   const line = String(value || "").trim();
   if (!line) return true;
-  return /(?:^|\s)доставк[аи](?=\s|$)/i.test(line)
+  return /^(?:добрый\s+(?:день|вечер|утро)|здравствуйте|привет)[\s.!,:;—–-]*$/i.test(line)
+    || /^(?:запрос|список|заявка|требуется|нужно)[\s.!,:;—–-]*$/i.test(line)
+    || /(?:^|\s)доставк[аи](?=\s|$)/i.test(line)
     || /^(?:условия\s+)?самовывоз(?=\s|$)/i.test(line)
     || /^(?:регион|адрес|телефон|контакты|почта|e-?mail|итого|всего)(?=\s|\s*:|$)/i.test(line);
 }
@@ -51,10 +53,13 @@ export function parseText(text) {
     if (container) name = name.replace(container[0], " ");
 
     // Preserve the established shorthand "Название — 25" only after all
-    // physical measurements have been removed.
+    // physical measurements have been removed. Supplier lists also commonly
+    // omit "шт." after a dimension: "Клён 3–4 м 20".
     if (quantity === null) {
       const bareQty = name.match(/\s+[—–-]\s*(\d+)\s*$/);
-      if (bareQty) { quantity = Number(bareQty[1]); name = name.slice(0, bareQty.index).trim(); }
+      const dimensionQty = (height || girth || container) && name.match(/\s+(\d+)\s*$/);
+      const match = bareQty || dimensionQty;
+      if (match) { quantity = Number(match[1]); name = name.slice(0, match.index).trim(); }
     }
     return { name: name.replace(/[,;\-–—\s]+$/g, "").trim(), quantity,
       height: height?.[0].trim() || "", girth: girth?.[1].trim() || "", container: container?.[0] || "", uncertain: quantity === null,

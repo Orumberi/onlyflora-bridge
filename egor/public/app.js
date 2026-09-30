@@ -33,7 +33,7 @@ function showLines(result) {
   resetResult(); $("lines").replaceChildren(); $("warnings").textContent = result.warnings.join(" ");
   result.lines.forEach(line => {
     const row = node("div", undefined, "line" + (line.uncertain ? " uncertain" : ""));
-    for (const [key, caption] of [["name", "Растение / сорт"], ["quantity", "Шт."], ["height", "Высота"], ["girth", "Обхват"], ["container", "Контейнер"]]) {
+    for (const [key, caption] of [["name", "Растение / сорт"], ["quantity", "Шт."], ["height", "Высота"], ["girth", "Обхват (необяз.)"], ["container", "Контейнер (необяз.)"]]) {
       const label = node("label", caption), input = node("input"); input.dataset.field = key; input.value = line[key] ?? "";
       if (key === "quantity") { input.type = "number"; input.min = "1"; input.max = "100000"; input.step = "1"; }
       input.addEventListener("input", resetResult); label.append(input); row.append(label);
@@ -87,7 +87,7 @@ $("plan").addEventListener("click", () => run($("plan"), async () => {
       for (const offer of row.alternatives) {
         alternativeCount++;
         const alt = node("article", undefined, "alternative"); alt.append(node("span", initials(offer.name), "plant-thumb small-thumb"));
-        const text = node("div"); text.append(node("strong", offer.name), node("span", offer.nursery), node("small", [offer.height, offer.girth && "обхват " + offer.girth, offer.container].filter(Boolean).join(" · ")), node("b", money(offer.priceKopecks))); alt.append(text);
+        const text = node("div"); text.append(node("strong", offer.name), node("span", offer.nursery), node("small", [offer.height, offer.girth && "обхват " + offer.girth, offer.container].filter(Boolean).join(" · ")), node("small", offer.reason), node("b", money(offer.priceKopecks))); alt.append(text);
         $("alternatives").append(alt);
       }
     }

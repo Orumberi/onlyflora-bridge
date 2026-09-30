@@ -32,6 +32,24 @@ function containerName(value) {
   return String(value || "").toUpperCase().replaceAll("С", "C").replace(/\s/g, "");
 }
 
+function rangesOverlap(wanted, offered) {
+  if (!wanted || !offered) return true;
+  if (wanted[0] === wanted[1]) return offered[0] <= wanted[0] && wanted[0] <= offered[1];
+  if (offered[0] === offered[1]) return wanted[0] <= offered[0] && offered[0] <= wanted[1];
+  return Math.max(wanted[0], offered[0]) < Math.min(wanted[1], offered[1]);
+}
+
+function alternativeScore(line, offer, productIds, wantedRange) {
+  if (productIds.has(offer.productId)) return 1000;
+  const wanted = normalizeName(line.name).split(" ").filter(Boolean);
+  const actual = normalizeName(offer.name).split(" ").filter(Boolean);
+  if (!wanted.length || wanted[0] !== actual[0]) return -1;
+  const actualSet = new Set(actual);
+  const shared = wanted.slice(1).filter(token => actualSet.has(token)).length;
+  const rangeBonus = wantedRange && rangesOverlap(wantedRange, offer.range) ? 25 : 0;
+  return 100 + shared * 30 + rangeBonus;
+}
+
 export function publicOffers(product) {
   if (String(product.status) !== "1" || product.currency !== "RUB") return [];
   return Object.values(product.skus || {}).flatMap(sku => {
@@ -51,7 +69,7 @@ export function publicOffers(product) {
     const nursery = parts.slice(2).join(", ");
     const count = sku.count === null || sku.count === undefined ? null : Number(sku.count);
     const price = Number(sku.price);
-    if (!sku.id || !range || !/^(?:[CP]\d+(?:\.\d+)?|(?:WRB|RB)(?:\d+(?:\.\d+)?)?)$/.test(container) || !nursery || !(price > 0) || !Number.isFinite(price) || !Number.isSafeInteger(Math.round(price * 100) * 100000)) return [];
+    if (!sku.id || !range || (container && !/^(?:[CP]\d+(?:\.\d+)?|(?:WRB|RB)(?:\d+(?:\.\d+)?)?)$/.test(container)) || !nursery || !(price > 0) || !Number.isFinite(price) || !Number.isSafeInteger(Math.round(price * 100) * 100000)) return [];
     // Version 1 is for plants sold individually, not fractional units or packs.
     const minimum = Number(sku.order_count_min ?? product.order_count_min ?? 1);
     const step = Number(sku.order_count_step ?? product.order_count_step ?? 1);
@@ -100,7 +118,7 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
     const productIds = new Set(matchingProducts.map(p => String(p.id)));
     const fitting = allOffers.filter(o => productIds.has(o.productId)
       && (!line.container || o.container === containerName(line.container))
-      && (!wantedRange || (o.range[0] === wantedRange[0] && o.range[1] === wantedRange[1]))
+      && (!wantedRange || rangesOverlap(wantedRange, o.range))
       && (!wantedGirthRange || (o.girthRange && o.girthRange[0] === wantedGirthRange[0] && o.girthRange[1] === wantedGirthRange[1])));
     const candidates = fitting.filter(o => (remaining.get(o.skuId) || 0) > 0);
     const allocations = [];
@@ -126,13 +144,21 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
       }
     }
     const allocatedIds = new Set(allocations.map(o => o.skuId));
-    // Alternatives may be other variants of the same matched master product.
-    // A shared genus alone is not a meaningful replacement.
-    const alternatives = shortage ? allOffers.filter(o => !allocatedIds.has(o.skuId)
-      && productIds.has(o.productId))
-      .slice(0, 8).map(o => ({ ...o, reason: wantedGirthRange && !o.girthRange
-        ? "Обхват предложения не указан — подтвердите у питомника"
-        : o.count === null ? "Остаток не подтверждён" : "Проверьте название, сорт, высоту, обхват и контейнер" })) : [];
+    const seenAlternativeProducts = new Set();
+    const alternatives = shortage ? allOffers
+      .filter(o => !allocatedIds.has(o.skuId))
+      .map(o => ({ offer: o, score: alternativeScore(line, o, productIds, wantedRange) }))
+      .filter(candidate => candidate.score >= 0)
+      .sort((a, b) => b.score - a.score || a.offer.priceKopecks - b.offer.priceKopecks)
+      .filter(({ offer }) => {
+        if (seenAlternativeProducts.has(offer.productId)) return false;
+        seenAlternativeProducts.add(offer.productId); return true;
+      })
+      .slice(0, 6).map(({ offer, score }) => ({ ...offer, reason: productIds.has(offer.productId)
+        ? wantedGirthRange && !offer.girthRange ? "Обхват не указан — уточните у питомника"
+          : "Тот же товар другого размера или контейнера"
+        : score >= 130 ? "Близкий вариант того же рода — не точная замена"
+          : "Аналог того же рода — проверьте сорт и характеристики" })) : [];
     return { request: line, allocations, shortage, alternatives,
       status: needsClarification ? "needs_clarification" : shortage ? (allocations.length ? "partial" : "not_found") : "matched" };
   });
@@ -142,7 +168,7 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
     complete: complete && rows.every(r => r.shortage === 0),
     notes: ["Доставка не включена. Подбор не резервирует остатки.",
       ...(conflicts.size ? ["Обнаружены противоречивые дубли предложений; они исключены из автоматического подбора."] : []),
-      "Автоподбор использует предложения с однозначно указанными питомником, диапазоном высоты и контейнером. Запрошенный обхват должен быть указан в предложении и совпадать. Неограниченный складской остаток требует подтверждения питомника.",
+      "Обхват и контейнер в запросе необязательны. Если они указаны, подбор учитывает их. Неограниченный складской остаток требует подтверждения питомника.",
       ...(strategy === "suppliers" ? ["Число поставщиков сокращается эвристически; глобальный минимум не гарантируется."] : []),
       ...(!complete ? ["Проверена только часть результатов поиска; подбор не полный."] : [])] };
 }

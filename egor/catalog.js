@@ -1,9 +1,14 @@
 // Public offer projection: never return purchase prices, contacts or internal params.
 export function normalizeName(value = "") {
   const normalized = String(value).toLowerCase().replaceAll("ё", "е")
+    .replace(/\([^)]*\)/g, " ")
     .replace(/thuja occidentalis/g, "туя западная")
     .replace(/cornus alba/g, "дерен белый")
     .replace(/smaragd/g, "смарагд").replace(/golden ring/g, "голден ринг")
+    .replace(/blue\s*(?:and|&)\s*gold|блю\s+энд\s+голд/g, "blue gold")
+    .replace(/береза\s+бородавчатая/g, "береза повислая")
+    .replace(/можжевельник\s+пфитцериана/g, "можжевельник средний")
+    .replace(/\b(?:на\s+штамбе|высота\s+растения)\b/g, " ")
     .replace(/[^\p{L}\p{N}]+/gu, " ").trim().replace(/\s+/g, " ");
   return normalized.split(" ").filter((token, i, all) => i === 0 || token !== all[i - 1]).join(" ");
 }
@@ -121,8 +126,10 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
       }
     }
     const allocatedIds = new Set(allocations.map(o => o.skuId));
+    // Alternatives may be other variants of the same matched master product.
+    // A shared genus alone is not a meaningful replacement.
     const alternatives = shortage ? allOffers.filter(o => !allocatedIds.has(o.skuId)
-      && (productIds.has(o.productId) || normalizeName(o.name).split(" ")[0] === normalizeName(line.name).split(" ")[0]))
+      && productIds.has(o.productId))
       .slice(0, 8).map(o => ({ ...o, reason: wantedGirthRange && !o.girthRange
         ? "Обхват предложения не указан — подтвердите у питомника"
         : o.count === null ? "Остаток не подтверждён" : "Проверьте название, сорт, высоту, обхват и контейнер" })) : [];

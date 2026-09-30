@@ -38,7 +38,9 @@ export async function recognizePhoto(image, { apiKey, model, fetchImpl = fetch }
   // A mistyped or unavailable configured model must not disable photo OCR.
   // Retry once with the broadly available vision model; never retry auth,
   // billing or rate-limit failures.
-  if ([400, 404].includes(response.status) && model !== "gpt-4o-mini") response = await request("gpt-4o-mini");
+  if (([400, 404].includes(response.status) || response.status >= 500) && model !== "gpt-4o-mini") {
+    response = await request("gpt-4o-mini");
+  }
   if (!response.ok) {
     const message = response.status === 401 ? "Ключ распознавания отклонён. Обновите серверный API-ключ."
       : response.status === 429 ? "Сервис распознавания исчерпал лимит или баланс API. Пополните лимит и повторите."

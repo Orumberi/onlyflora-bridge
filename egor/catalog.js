@@ -165,6 +165,7 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
     const seenAlternativeProducts = new Set();
     const alternatives = shortage ? allOffers
       .filter(o => !allocatedIds.has(o.skuId))
+      .filter(o => o.count === null || o.count > 0)
       .map(o => ({ offer: o, score: alternativeScore(line, o, productIds, wantedRange) }))
       .filter(candidate => candidate.score >= 0)
       .sort((a, b) => b.score - a.score || a.offer.priceKopecks - b.offer.priceKopecks)

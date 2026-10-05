@@ -29,7 +29,25 @@ export function girthRange(value = "") {
 }
 
 function containerName(value) {
-  return String(value || "").toUpperCase().replaceAll("С", "C").replace(/\s/g, "");
+  const source = String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+  if (/ком.*(?:с|в)\s+(?:металлической\s+)?сетк(?:е|ой)/u.test(source)) return "WRB";
+  if (/ком.*(?:без\s+сетки|в\s+мешковине)/u.test(source)) return "RB";
+  if (/^(?:земляной\s+ком|ком(?:\s+земли)?)$/u.test(source)) return "RB/WRB";
+  return source.toUpperCase().replaceAll("С", "C").replaceAll(",", ".").replace(/\s/g, "");
+}
+
+function containerMatches(wanted, offered) {
+  const requested = containerName(wanted); const actual = containerName(offered);
+  if (!requested) return true;
+  if (requested === "RB/WRB") return /^(?:WRB|RB)(?:\d+(?:\.\d+)?)?$/.test(actual);
+  if (requested === "WRB") return /^WRB(?:\d+(?:\.\d+)?)?$/.test(actual);
+  if (requested === "RB") return /^RB(?:\d+(?:\.\d+)?)?$/.test(actual);
+  const range = requested.match(/^([CP])(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/);
+  if (range) {
+    const actualSize = actual.match(new RegExp(`^${range[1]}(\\d+(?:\\.\\d+)?)$`));
+    return Boolean(actualSize && Number(actualSize[1]) >= Number(range[2]) && Number(actualSize[1]) <= Number(range[3]));
+  }
+  return actual === requested;
 }
 
 function rangesOverlap(wanted, offered) {
@@ -69,7 +87,7 @@ export function publicOffers(product) {
     const nursery = parts.slice(2).join(", ");
     const count = sku.count === null || sku.count === undefined ? null : Number(sku.count);
     const price = Number(sku.price);
-    if (!sku.id || !range || (container && !/^(?:[CP]\d+(?:\.\d+)?|(?:WRB|RB)(?:\d+(?:\.\d+)?)?)$/.test(container)) || !nursery || !(price > 0) || !Number.isFinite(price) || !Number.isSafeInteger(Math.round(price * 100) * 100000)) return [];
+    if (!sku.id || !range || (container && !/^(?:[CP]\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)?|(?:WRB|RB)(?:\d+(?:\.\d+)?)?)$/.test(container)) || !nursery || !(price > 0) || !Number.isFinite(price) || !Number.isSafeInteger(Math.round(price * 100) * 100000)) return [];
     // Version 1 is for plants sold individually, not fractional units or packs.
     const minimum = Number(sku.order_count_min ?? product.order_count_min ?? 1);
     const step = Number(sku.order_count_step ?? product.order_count_step ?? 1);
@@ -117,7 +135,7 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
     const needsClarification = names.size > 1 || Boolean(line.height && !wantedRange) || Boolean(line.girth && !wantedGirthRange);
     const productIds = new Set(matchingProducts.map(p => String(p.id)));
     const fitting = allOffers.filter(o => productIds.has(o.productId)
-      && (!line.container || o.container === containerName(line.container))
+      && containerMatches(line.container, o.container)
       && (!wantedRange || rangesOverlap(wantedRange, o.range))
       && (!wantedGirthRange || (o.girthRange && o.girthRange[0] === wantedGirthRange[0] && o.girthRange[1] === wantedGirthRange[1])));
     const candidates = fitting.filter(o => (remaining.get(o.skuId) || 0) > 0);

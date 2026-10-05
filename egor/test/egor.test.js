@@ -21,8 +21,9 @@ test("real SKU 21264: 25 plants cost 31875 RUB, not the master card's other vari
 test("current multi-nursery records support nursery-first names and single heights", () => {
   const result = buildPlan([line(25, { height: "110 см", container: "WRB" })], snapshot);
   assert.equal(result.complete, true);
-  assert.equal(result.rows[0].allocations[0].nursery, "Гарден Маркет");
-  assert.equal(result.totalKopecks, 25 * 7650 * 100);
+  assert.match(result.rows[0].allocations[0].container, /^WRB/);
+  assert.equal(result.rows[0].allocations[0].height, "100–125 см");
+  assert.equal(result.totalKopecks, 25 * 6000 * 100);
 });
 test("Smaragd does not become Golden Smaragd, a cone or a cube", () => {
   assert.equal(nameMatches(line(), snapshot.find(p => p.id === "26277")), false);
@@ -91,6 +92,37 @@ test("text parser removes numbered prefixes and cities from a real customer requ
   assert.deepEqual(result.lines.map(row => row.quantity), [15, 10, 4]);
   assert.deepEqual(result.lines.map(row => row.height), ["1,5-2,0 м", "0,9 м", "0.9 м"]);
   assert.match(result.warnings.join(" "), /служебные строки/);
+});
+test("text parser handles supplier table order, greetings and root-ball shorthand", () => {
+  const result = parseText(`Добрый день! запрос материала, предложение
+Спасибо заранее )))
+Бруннера сибирская C2/3 шт 122,0
+Купальница гибридная желтая C2/3 шт 45,0"
+Дерен белый Сибирика Вариегата C2/3 шт 16,0
+Чубушник венечный (сорт) WRB40 130-150 шт 27
+Калина обыкновенная WRB50 175-200 шт 5
+Форзиция промежуточная от 0,9м ком шт 40`);
+  assert.deepEqual(result.lines.map(row => row.name), [
+    "Бруннера сибирская", "Купальница гибридная желтая", "Дерен белый Сибирика Вариегата",
+    "Чубушник венечный (сорт)", "Калина обыкновенная", "Форзиция промежуточная",
+  ]);
+  assert.deepEqual(result.lines.map(row => row.quantity), [122, 45, 16, 27, 5, 40]);
+  assert.deepEqual(result.lines.map(row => row.height), ["", "", "", "130-150 см", "175-200 см", "0,9м"]);
+  assert.deepEqual(result.lines.map(row => row.container), ["C2/3", "C2/3", "C2/3", "WRB40", "WRB50", "RB/WRB"]);
+  assert.match(result.warnings.join(" "), /служебные строки: 2/);
+});
+test("WRB shorthand and C2/3 match compatible catalog containers", () => {
+  const wrb = structuredClone(product); wrb.name = "Форзиция промежуточная"; wrb.skus = {
+    1: { id: "1", sku: "F-1", name: "80–100 см, WRB40, Питомник", price: 1000, count: 10, available: "1", status: "1" },
+  };
+  const rootBall = buildPlan([{ name: "Форзиция промежуточная", quantity: 2, height: "0,9 м", girth: "", container: "ком" }], [wrb]);
+  assert.equal(rootBall.rows[0].allocations[0].quantity, 2);
+
+  const c2 = structuredClone(product); c2.name = "Бруннера сибирская"; c2.skus = {
+    2: { id: "2", sku: "B-2", name: "20–30 см, C2, Питомник", price: 500, count: 200, available: "1", status: "1" },
+  };
+  const potRange = buildPlan([{ name: "Бруннера сибирская", quantity: 122, height: "", girth: "", container: "C2/3" }], [c2]);
+  assert.equal(potRange.rows[0].allocations[0].quantity, 122);
 });
 test("photo post-processing removes numbering and locations", () => {
   const result = sanitizeExtraction({ warnings: [], lines: [

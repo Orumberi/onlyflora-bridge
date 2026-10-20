@@ -80,9 +80,61 @@ export function buildSitePageFullUrl(url, parentFullUrl = "") {
   return `${normalizeSitePagePath(parentFullUrl)}${normalizeSitePagePath(url)}`;
 }
 
+export function selectPurchasableUnavailableSkus(products = []) {
+  const updates = new Map();
+  for (const product of products) {
+    for (const sku of Object.values(product?.skus ?? {})) {
+      if (
+        Number(sku?.price) > 0 &&
+        sku?.count !== null &&
+        sku?.count !== undefined &&
+        Number(sku.count) > 0 &&
+        Number(sku?.status) === 1 &&
+        Number(sku?.available) === 0
+      ) {
+        updates.set(Number(sku.id), {
+          id: Number(sku.id),
+          product_id: Number(sku.product_id ?? product.id),
+          product_name: String(product.name ?? ""),
+          sku_name: String(sku.name ?? ""),
+          price: Number(sku.price),
+          count: Number(sku.count),
+        });
+      }
+    }
+  }
+  return [...updates.values()];
+}
+
+async function scanPurchasableUnavailableSkus(client, categoryId) {
+  const pageSize = 200;
+  let offset = 0;
+  let total = null;
+  let examinedProducts = 0;
+  const candidates = new Map();
+
+  do {
+    const page = await client.searchProducts({
+      categoryId,
+      limit: pageSize,
+      offset,
+    });
+    const products = Array.isArray(page?.products) ? page.products : [];
+    total = Number(page?.count ?? products.length);
+    examinedProducts += products.length;
+    for (const candidate of selectPurchasableUnavailableSkus(products)) {
+      candidates.set(candidate.id, candidate);
+    }
+    offset += products.length;
+    if (!products.length) break;
+  } while (offset < total);
+
+  return { examinedProducts, candidates: [...candidates.values()] };
+}
+
 export function createOnlyFloraMcpServer() {
   const server = new McpServer(
-    { name: "onlyflora-webasyst", version: "0.4.0" },
+    { name: "onlyflora-webasyst", version: "0.5.0" },
     {
       instructions:
         "Inspect records before changing them. Use IDs returned by read tools. Never create duplicates. Writes affect the OnlyFlora Webasyst catalog and Site pages. Product images and native Shop-Script 12.3 category thumbnails are supported. Theme files remain outside the OAuth API. Before updating a page, always load it with get_site_page and preserve fields that were not requested to change.",
@@ -547,6 +599,90 @@ export function createOnlyFloraMcpServer() {
     async ({ product_id, ...input }, extra) => {
       const result = await clientFromExtra(extra, "catalog.write").addSku(product_id, input);
       return success(result, `Added a new SKU to product ${product_id}.`);
+    }
+  );
+
+  register(
+    server,
+    "update_product_sku",
+    {
+      title: "Update Webasyst product SKU",
+      description:
+        "Update selected fields of one inspected SKU. Omitted fields are preserved.",
+      inputSchema: {
+        sku_id: positiveId,
+        name: z.string().max(255).optional(),
+        sku: z.string().max(255).optional(),
+        price: z.coerce.number().min(0).optional(),
+        compare_price: z.coerce.number().min(0).optional(),
+        purchase_price: z.coerce.number().min(0).optional(),
+        available: statusCategory.optional(),
+        status: statusCategory.optional(),
+      },
+      outputSchema: resultSchema,
+      securitySchemes: writeSecurity,
+      annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
+    },
+    async ({ sku_id, ...input }, extra) => {
+      if (!Object.keys(input).length) throw new Error("No SKU fields were provided");
+      const result = await clientFromExtra(extra, "catalog.write").updateSku(sku_id, input);
+      return success(result, `Updated SKU ${sku_id}.`);
+    }
+  );
+
+  register(
+    server,
+    "repair_sku_availability",
+    {
+      title: "Repair SKU availability from positive stock",
+      description:
+        "Scan a category and set available=1 only for visible SKUs that have both a positive price and positive stock. Dry-run is enabled by default; zero-price and zero/unknown-stock SKUs are never changed.",
+      inputSchema: {
+        category_id: positiveId.default(1),
+        dry_run: z.boolean().default(true),
+        max_updates: z.coerce.number().int().min(1).max(10_000).default(5_000),
+      },
+      outputSchema: resultSchema,
+      securitySchemes: writeSecurity,
+      annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
+    },
+    async ({ category_id, dry_run, max_updates }, extra) => {
+      const client = clientFromExtra(extra, "catalog.write");
+      const { examinedProducts, candidates } = await scanPurchasableUnavailableSkus(
+        client,
+        category_id
+      );
+      if (candidates.length > max_updates) {
+        throw new Error(
+          `Safety limit exceeded: found ${candidates.length} SKU updates, limit is ${max_updates}`
+        );
+      }
+
+      let updated = 0;
+      if (!dry_run) {
+        const chunkSize = 250;
+        for (let index = 0; index < candidates.length; index += chunkSize) {
+          const chunk = candidates.slice(index, index + chunkSize);
+          await client.massUpdateSkus(chunk.map(({ id }) => ({ id, available: 1 })));
+          updated += chunk.length;
+        }
+      }
+
+      const result = {
+        category_id,
+        dry_run,
+        examined_products: examinedProducts,
+        candidate_skus: candidates.length,
+        updated_skus: updated,
+        sample: candidates.slice(0, 20),
+        rule: "price > 0 AND count > 0 AND status = 1 AND available = 0",
+      };
+      return success(
+        result,
+        dry_run
+          ? `Dry run found ${candidates.length} safe SKU availability updates.`
+          : `Updated availability for ${updated} SKUs.`
+      );
     }
   );
 

@@ -34,7 +34,7 @@ const oauthProvider = new OnlyFloraOAuthProvider({
 });
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "onlyflora-bridge", version: "0.3.1" });
+  res.json({ ok: true, service: "onlyflora-bridge", version: "0.5.0" });
 });
 
 

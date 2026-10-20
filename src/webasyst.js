@@ -13,6 +13,8 @@ const ALLOWED_METHODS = new Set([
   "shop.product.update",
   "shop.product.addToCategory",
   "shop.product.skus.add",
+  "shop.product.skus.update",
+  "shop.product.massUpdate",
   "shop.product.images.add",
   "site.domain.getList",
   "site.page.getList",
@@ -342,6 +344,24 @@ export class WebasystClient {
       httpMethod: "POST",
       query: { product_id: productId },
       body: input,
+    });
+  }
+
+  updateSku(id, input) {
+    return this.call("shop.product.skus.update", {
+      httpMethod: "POST",
+      query: { id },
+      body: input,
+    });
+  }
+
+  massUpdateSkus(skus) {
+    if (!Array.isArray(skus) || !skus.length) {
+      throw new Error("At least one SKU update is required");
+    }
+    return this.call("shop.product.massUpdate", {
+      httpMethod: "POST",
+      body: { jsku: JSON.stringify(skus) },
     });
   }
 

@@ -214,3 +214,52 @@ test("WebasystClient fails closed when category thumbnail upload redirects to lo
     /rejected category thumbnail upload authorization/
   );
 });
+
+test("WebasystClient updates one SKU without overwriting omitted fields", async () => {
+  let captured;
+  const client = new WebasystClient({
+    accessToken: "test-token",
+    accountUrl: "https://example.webasyst.cloud",
+    fetchImpl: async (url, options) => {
+      captured = { url: String(url), options };
+      return new Response(JSON.stringify({ id: 51128, available: 1 }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    },
+  });
+
+  const result = await client.updateSku(51128, { available: 1 });
+
+  assert.equal(result.id, 51128);
+  assert.match(captured.url, /shop\.product\.skus\.update/);
+  assert.match(captured.url, /id=51128/);
+  assert.equal(captured.options.body, "available=1");
+});
+
+test("WebasystClient sends bulk SKU updates as Webasyst jsku JSON", async () => {
+  let captured;
+  const client = new WebasystClient({
+    accessToken: "test-token",
+    accountUrl: "https://example.webasyst.cloud",
+    fetchImpl: async (url, options) => {
+      captured = { url: String(url), options };
+      return new Response(JSON.stringify({ status: "ok" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    },
+  });
+
+  await client.massUpdateSkus([
+    { id: 51128, available: 1 },
+    { id: 55131, available: 1 },
+  ]);
+
+  assert.match(captured.url, /shop\.product\.massUpdate/);
+  const form = new URLSearchParams(captured.options.body);
+  assert.deepEqual(JSON.parse(form.get("jsku")), [
+    { id: 51128, available: 1 },
+    { id: 55131, available: 1 },
+  ]);
+});

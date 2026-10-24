@@ -232,6 +232,19 @@
     }).join("");
   }
 
+  function keyboardLayoutCandidate(value) {
+    const source = "qwertyuiop[]asdfghjkl;'zxcvbnm,.`";
+    const target = "йцукенгшщзхъфывапролджэячсмитьбюё";
+    if (!/[a-z\[\];',.`]/i.test(value) || /[а-яё]/i.test(value)) return value;
+    return [...value].map(character => {
+      const lower = character.toLowerCase();
+      const index = source.indexOf(lower);
+      if (index < 0) return character;
+      const replacement = target[index];
+      return character === character.toUpperCase() ? replacement.toUpperCase() : replacement;
+    }).join("");
+  }
+
   const categories = [
     ["Лиственные деревья", "assets/categories/deciduous-trees.png"],
     ["Хвойные растения", "assets/categories/conifers.png"],
@@ -294,7 +307,7 @@
     <div class="of-shell">
       <header class="of-topbar">
         <a class="of-brand" href="/" aria-label="OnlyFlora — главная"><span class="of-brand-mark">${logoMark()}</span><span class="of-brand-copy"><span class="of-brand-word">Only<span>Flora</span></span><small>Бедный не имеет тени</small></span></a>
-        <form class="of-search" action="${escapeHtml(searchAction)}" method="get"><input type="search" name="${escapeHtml(searchName)}" placeholder="Поиск растений, питомников, товаров..." aria-label="Поиск" required><button type="submit" aria-label="Найти"></button></form>
+        <form class="of-search" action="${escapeHtml(searchAction)}" method="get"><input type="search" name="${escapeHtml(searchName)}" placeholder="Поиск растений, питомников, товаров..." aria-label="Поиск" autocomplete="off" required><button type="submit" aria-label="Найти"></button><div class="of-live-result" aria-live="polite" hidden></div></form>
         <a class="of-location" href="#" aria-label="Регион: Москва">Москва⌄</a>
         <nav class="of-actions" aria-label="Личный раздел">
           <a class="of-action" href="${escapeHtml(links.favorites)}"><span class="of-action-icon">♡</span><span>Избранное</span></a>
@@ -349,9 +362,71 @@
   oldBody.classList.add(isHome ? "of-modern-active" : "of-modern-header-active");
 
   const searchForm = root.querySelector(".of-search");
+  const searchInput = searchForm?.elements.namedItem(searchName);
+  const searchResult = searchForm?.querySelector(".of-live-result");
+  let searchTimer = 0;
+  let searchSequence = 0;
+
+  function hideLiveSearch() {
+    if (!(searchResult instanceof HTMLElement)) return;
+    searchResult.hidden = true;
+    searchResult.replaceChildren();
+  }
+
+  async function requestLiveSearch(query) {
+    const url = `${searchAction}?query=${encodeURIComponent(query)}&ajax=1`;
+    const response = await fetch(url, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: new URLSearchParams({ query })
+    });
+    if (!response.ok) throw new Error("search_failed");
+    return response.text();
+  }
+
+  async function updateLiveSearch() {
+    if (!(searchInput instanceof HTMLInputElement) || !(searchResult instanceof HTMLElement)) return;
+    const raw = searchInput.value.trim();
+    if (raw.length < 3) return hideLiveSearch();
+    const sequence = ++searchSequence;
+    const converted = keyboardLayoutCandidate(raw);
+    try {
+      let html = await requestLiveSearch(converted);
+      let usedQuery = converted;
+      if (!/<li\b/i.test(html) && converted !== raw) {
+        html = await requestLiveSearch(raw);
+        usedQuery = raw;
+      }
+      if (sequence !== searchSequence || searchInput.value.trim() !== raw) return;
+      if (usedQuery !== raw && /<li\b/i.test(html)) searchInput.value = usedQuery;
+      searchResult.innerHTML = html;
+      searchResult.hidden = !/<li\b/i.test(html);
+    } catch {
+      if (sequence === searchSequence) hideLiveSearch();
+    }
+  }
+
+  if (searchInput instanceof HTMLInputElement) {
+    searchInput.addEventListener("input", () => {
+      window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(updateLiveSearch, 220);
+    });
+    searchInput.addEventListener("focus", () => {
+      if (searchResult instanceof HTMLElement && searchResult.querySelector("li")) searchResult.hidden = false;
+    });
+    searchInput.addEventListener("keydown", event => {
+      if (event.key === "Escape") hideLiveSearch();
+    });
+  }
+  document.addEventListener("pointerdown", event => {
+    if (searchForm && !searchForm.contains(event.target)) hideLiveSearch();
+  });
   searchForm?.addEventListener("submit", () => {
-    const input = searchForm.elements.namedItem(searchName);
-    if (input instanceof HTMLInputElement) input.value = correctKeyboardLayout(input.value.trim());
+    if (searchInput instanceof HTMLInputElement) searchInput.value = correctKeyboardLayout(searchInput.value.trim());
   });
 
   document.dispatchEvent(new CustomEvent("onlyflora:modern-ready"));

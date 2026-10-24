@@ -101,9 +101,29 @@ test("modern navigation has a real accessible greenery dropdown", async () => {
 test("search corrects an obvious English keyboard layout typo", async () => {
   const theme = await readFile("egor/public/theme.js", "utf8");
   assert.match(theme, /function correctKeyboardLayout/);
+  assert.match(theme, /function keyboardLayoutCandidate/);
   assert.match(theme, /const source = "qwertyuiop\[\]asdfghjkl;'zxcvbnm,\.`"/);
   assert.match(theme, /const target = "йцукенгшщзхъфывапролджэячсмитьбюё"/);
-  assert.match(theme, /correctKeyboardLayout\(input\.value\.trim\(\)\)/);
+  assert.match(theme, /correctKeyboardLayout\(searchInput\.value\.trim\(\)\)/);
+});
+
+test("modern search restores ProStore live suggestions with a layout fallback", async () => {
+  const theme = await readFile("egor/public/theme.js", "utf8");
+  const css = await readFile("egor/public/theme.css", "utf8");
+  assert.match(theme, /class="of-live-result"/);
+  assert.match(theme, /requestLiveSearch\(converted\)/);
+  assert.match(theme, /requestLiveSearch\(raw\)/);
+  assert.match(theme, /X-Requested-With": "XMLHttpRequest"/);
+  assert.match(theme, /searchResult\.innerHTML = html/);
+  assert.match(css, /\.of-live-result/);
+});
+
+test("Egor starts catalog search without a hidden confirmation gate", async () => {
+  const html = await readFile("egor/public/index.html", "utf8");
+  const app = await readFile("egor/public/app.js", "utf8");
+  assert.doesNotMatch(html, /id="confirmed"/);
+  assert.doesNotMatch(app, /\$\("confirmed"\)/);
+  assert.match(app, /api\("plan", \{ lines, strategy: \$\("strategy"\)\.value, confirmed: true \}\)/);
 });
 
 test("onlytest product cards use the plant placeholder for missing or broken photos", async () => {

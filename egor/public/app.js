@@ -18,7 +18,7 @@ async function publicApi(path, body) {
   return result;
 }
 async function run(button, work) { button.disabled = true; try { await work(); } catch (e) { notice(e.name === "TimeoutError" ? "Подбор занял слишком много времени. Попробуйте меньше строк." : e.message, true); } finally { button.disabled = false; } }
-function resetResult() { lastPlan = null; $("result").hidden = true; $("confirmed").checked = false; }
+function resetResult() { lastPlan = null; $("result").hidden = true; }
 function setInputMode(mode) {
   inputMode = mode;
   for (const name of ["photo", "text"]) {
@@ -114,7 +114,6 @@ $("extract").addEventListener("click", () => run($("extract"), async () => {
   showLines(file ? await api("extract", body) : await publicApi("parse", body));
 }));
 $("plan").addEventListener("click", () => run($("plan"), async () => {
-  if (!$("confirmed").checked) throw new Error("Сначала проверьте список и поставьте галочку подтверждения.");
   const lines = [...$("lines").children].map(row => Object.fromEntries([...row.querySelectorAll("input")].map(input => [input.dataset.field, input.dataset.field === "quantity" ? Number(input.value) : input.value.trim()])));
   if (!lines.length || lines.some(l => !l.name || !Number.isInteger(l.quantity) || l.quantity <= 0)) throw new Error("Укажите название и положительное целое количество в каждой строке.");
   const submitted = JSON.stringify({ lines, strategy: $("strategy").value });

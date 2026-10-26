@@ -7,7 +7,7 @@
   <title>Егор Григорьевич S — подбор растений</title>
   <link rel="stylesheet" href="./style.css">
   <style>
-    .line { grid-template-columns: minmax(150px,1.7fr) 66px minmax(84px,1fr) minmax(76px,.85fr) 86px 28px; }
+    .line { grid-template-columns: minmax(150px,1.7fr) 66px minmax(84px,1fr) minmax(84px,1fr) minmax(76px,.85fr) 86px 28px; }
     @media (max-width:540px) {
       .line { grid-template-columns: 1fr 1fr; }
       .line label:first-child { grid-column:1/-1; }
@@ -56,7 +56,7 @@
 
   <section id="review" class="review" hidden>
     <div class="section-title"><div><span class="step">Распознано</span><h2>Проверьте список</h2></div><button id="back-to-input" class="link-button" type="button">Изменить источник</button></div>
-    <p>Названия и количество можно поправить перед подбором.</p>
+    <p>Название, количество, высоту и возраст можно поправить перед подбором.</p>
     <div id="warnings" class="hint"></div>
     <div id="lines" class="recognized-lines"></div>
     <label class="strategy">Приоритет подбора<select id="strategy"><option value="price">Меньше стоимость растений</option><option value="suppliers">Меньше поставщиков</option></select></label>

@@ -33,7 +33,7 @@ function showLines(result) {
   resetResult(); $("lines").replaceChildren(); $("warnings").textContent = result.warnings.join(" ");
   result.lines.forEach(line => {
     const row = node("div", undefined, "line" + (line.uncertain ? " uncertain" : ""));
-    for (const [key, caption] of [["name", "Растение / сорт"], ["quantity", "Шт."], ["height", "Высота"], ["girth", "Обхват (необяз.)"], ["container", "Контейнер (необяз.)"]]) {
+    for (const [key, caption] of [["name", "Растение / сорт"], ["quantity", "Шт."], ["height", "Высота"], ["age", "Возраст (необяз.)"], ["girth", "Обхват (необяз.)"], ["container", "Контейнер (необяз.)"]]) {
       const label = node("label", caption), input = node("input"); input.dataset.field = key; input.value = line[key] ?? "";
       if (key === "quantity") { input.type = "number"; input.min = "1"; input.max = "100000"; input.step = "1"; }
       input.addEventListener("input", resetResult); label.append(input); row.append(label);
@@ -71,11 +71,12 @@ function chooseAlternative(rowIndex, skuId) {
 }
 function renderPlan(result) {
   $("result-title").textContent = result.complete ? "Подбор готов" : "Подобрана часть списка";
+  document.querySelector(".result-total span").textContent = result.complete ? "Итого без доставки" : "Итого по подобранным позициям";
   $("summary").textContent = money(result.totalKopecks);
   $("offers").replaceChildren(); $("alternatives").replaceChildren();
   let alternativeCount = 0;
   result.rows.forEach((row, rowIndex) => {
-    const requestedDetails = [row.request.height && "высота " + row.request.height, row.request.girth && "обхват " + row.request.girth, row.request.container].filter(Boolean).join(" · ");
+    const requestedDetails = [row.request.height && "высота " + row.request.height, row.request.age && "возраст " + row.request.age, row.request.girth && "обхват " + row.request.girth, row.request.container].filter(Boolean).join(" · ");
     const card = node("article", undefined, "offer-row");
     const requestHead = node("div", undefined, "request-head");
     const requestText = node("div"); requestText.append(node("h3", row.request.name), node("p", "Нужно: " + row.request.quantity + " шт." + (requestedDetails ? " · " + requestedDetails : "")));
@@ -168,10 +169,10 @@ uploadDrop.addEventListener("drop", event => {
 $("photo").addEventListener("change", () => { const file = $("photo").files[0]; if (file) notice("Выбран файл: " + file.name); });
 $("download").addEventListener("click", () => {
   if (!lastPlan) return;
-  const rows = [["Запрошено", "Нужно шт.", "Запрошенная высота", "Запрошенный обхват", "Подобрано", "Питомник", "Высота", "Обхват", "Контейнер", "Артикул", "Количество", "Цена ₽", "Сумма ₽", "Не подобрано шт."]];
+  const rows = [["Запрошено", "Нужно шт.", "Запрошенная высота", "Запрошенный возраст", "Запрошенный обхват", "Подобрано", "Питомник", "Высота", "Обхват", "Контейнер", "Артикул", "Количество", "Цена ₽", "Сумма ₽", "Не подобрано шт."]];
   for (const row of lastPlan.rows) {
-    for (const o of row.allocations) rows.push([row.request.name, row.request.quantity, row.request.height, row.request.girth, o.name, o.nursery, o.height, o.girth, o.container, o.sku, o.quantity, o.priceKopecks / 100, o.totalKopecks / 100, ""]);
-    if (row.shortage) rows.push([row.request.name, row.request.quantity, row.request.height, row.request.girth, "Не подобрано", "", "", "", "", "", "", "", "", row.shortage]);
+    for (const o of row.allocations) rows.push([row.request.name, row.request.quantity, row.request.height, row.request.age, row.request.girth, o.name, o.nursery, o.height, o.girth, o.container, o.sku, o.quantity, o.priceKopecks / 100, o.totalKopecks / 100, ""]);
+    if (row.shortage) rows.push([row.request.name, row.request.quantity, row.request.height, row.request.age, row.request.girth, "Не подобрано", "", "", "", "", "", "", "", "", "", row.shortage]);
   }
   const csv = rows.map(row => row.map(value => { let text = String(value); if (/^[=+@\-\t\r]/.test(text)) text = "'" + text; return '"' + text.replaceAll('"', '""') + '"'; }).join(";")).join("\r\n");
   const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" })); const a = node("a"); a.href = url; a.download = "onlyflora-podbor.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);

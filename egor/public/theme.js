@@ -136,6 +136,78 @@
     }
   }
 
+  const categoryPage = location.pathname.replace(/\/+$/, "").startsWith("/category/");
+
+  function modernizeCategoryContent() {
+    if (!categoryPage) return;
+
+    for (const heading of document.querySelectorAll(".well.align-center .h2")) {
+      if (!/в этой категории нет ни одного товара/i.test(heading.textContent || "")) continue;
+      const box = heading.closest(".well.align-center");
+      if (!box || box.dataset.ofModernEmpty === "1") continue;
+      box.dataset.ofModernEmpty = "1";
+      const title = document.createElement("div");
+      title.className = "h2";
+      title.textContent = "В этой категории пока нет опубликованных предложений.";
+      const text = document.createElement("p");
+      text.textContent = "Проверьте торговую площадку или отправьте список растений Егору Григорьевичу.";
+      const actions = document.createElement("div");
+      actions.style.paddingTop = "18px";
+      const market = document.createElement("a");
+      market.href = "/category/market/";
+      market.className = "button";
+      market.textContent = "Торговая площадка";
+      const picker = document.createElement("button");
+      picker.type = "button";
+      picker.className = "button gray";
+      picker.dataset.ofCategoryEgor = "1";
+      picker.textContent = "Подобрать растения";
+      actions.append(market, document.createTextNode(" "), picker);
+      box.replaceChildren(title, text, actions);
+    }
+
+    const benefitCopy = [
+      ["fa-leaf", "Предложения питомников", "Собираем реальные предложения питомников и садовых центров со всей России."],
+      ["fa-search", "Подбор растений", "Загрузите фото или список — Егор Григорьевич поможет найти подходящие позиции."],
+      ["fa-truck", "Доставка по согласованию", "Стоимость, сроки и способ доставки зависят от поставщика и региона заказа."],
+    ];
+    for (const list of document.querySelectorAll("ul.bullets.v1")) {
+      if (list.dataset.ofModernBenefits === "1") continue;
+      const labels = [...list.querySelectorAll(".bullet-heading")].map(node => (node.textContent || "").trim());
+      if (!["Доставка по России", "Оплата онлайн", "Магазин в Москве"].every(label => labels.includes(label))) continue;
+      list.dataset.ofModernBenefits = "1";
+      const items = benefitCopy.map(([icon, title, copy]) => {
+        const item = document.createElement("li");
+        item.className = "item col-md-4 col-sm-4 editor_content bullet-item";
+        const mark = document.createElement("i");
+        mark.className = `bullet-icon fa ${icon}`;
+        mark.setAttribute("aria-hidden", "true");
+        const body = document.createElement("div");
+        body.className = "bullet-body";
+        const heading = document.createElement("div");
+        heading.className = "bullet-heading";
+        heading.textContent = title;
+        body.append(heading, document.createTextNode(copy));
+        item.append(mark, body);
+        return item;
+      });
+      list.replaceChildren(...items);
+    }
+
+    for (const heading of document.querySelectorAll(".social-likes-head")) {
+      if (!/рассказать друзьям/i.test(heading.textContent || "")) continue;
+      const box = heading.parentElement;
+      if (box?.querySelector(".ya-share2")) box.remove();
+    }
+  }
+
+  document.addEventListener("click", event => {
+    const picker = event.target.closest?.("[data-of-category-egor]");
+    if (!picker) return;
+    event.preventDefault();
+    document.dispatchEvent(new CustomEvent("onlyflora:open-egor"));
+  });
+
   document.addEventListener("error", event => {
     if (event.target instanceof HTMLImageElement) useProductPlaceholder(event.target);
   }, true);
@@ -143,6 +215,7 @@
   applyProductFallbacks();
   bindCookieDetails();
   bindMarketplaceRulesLink();
+  modernizeCategoryContent();
   new MutationObserver(records => {
     for (const record of records) {
       for (const node of record.addedNodes) {
@@ -150,6 +223,7 @@
           applyProductFallbacks(node);
           bindCookieDetails(node);
           bindMarketplaceRulesLink(node);
+          modernizeCategoryContent();
         }
       }
     }

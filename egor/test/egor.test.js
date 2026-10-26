@@ -138,6 +138,18 @@ test("photo post-processing removes numbering and locations", () => {
   assert.equal(result.lines.length, 1); assert.equal(result.lines[0].name, "Туя Смарагд");
   assert.match(result.warnings.join(" "), /населённые пункты/);
 });
+test("photo post-processing separates age from height and restores priced matching", () => {
+  const extracted = sanitizeExtraction({ warnings: [], lines: [
+    { name: "Туя Смарагд", quantity: 25, height: "10–12 лет", age: "", girth: "", container: "", uncertain: false, note: "" },
+  ] });
+  assert.equal(extracted.lines[0].height, "");
+  assert.equal(extracted.lines[0].age, "10–12 лет");
+  assert.match(extracted.warnings.join(" "), /Возраст отделён от высоты/);
+  const result = buildPlan(extracted.lines, [product]);
+  assert.equal(result.rows[0].status, "matched");
+  assert.ok(result.totalKopecks > 0);
+  assert.equal(result.totalKopecks, result.rows[0].allocations.reduce((sum, offer) => sum + offer.totalKopecks, 0));
+});
 test("catalog pagination includes later offers and encodes an authenticated GET", async () => {
   const calls = [];
   const catalog = new EgorCatalog({ token: "test-catalog-token", fetchImpl: async (url, options) => {

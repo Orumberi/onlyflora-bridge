@@ -3,6 +3,7 @@ export const lineSchema = z.object({
   name: z.string().trim().min(2).max(160).regex(/^[\p{L}\p{N}\s'’"«»().,\/:+&№–—-]+$/u),
   quantity: z.number().int().min(1).max(100000),
   height: z.string().trim().max(40).default(""),
+  age: z.string().trim().max(40).default(""),
   girth: z.string().trim().max(30).default(""),
   container: z.string().trim().max(30).default(""),
 });
@@ -34,7 +35,7 @@ export const planSchema = z.object({
 export const extractionSchema = z.object({
   lines: z.array(z.object({
     name: z.string().max(160), quantity: z.number().int().min(1).max(100000).nullable(),
-    height: z.string().max(40), girth: z.string().max(30), container: z.string().max(30),
+    height: z.string().max(40), age: z.string().max(40).default(""), girth: z.string().max(30), container: z.string().max(30),
     uncertain: z.boolean(), note: z.string().max(400),
   })).max(30), warnings: z.array(z.string().max(400)).max(10),
 });
@@ -66,13 +67,18 @@ function integerQuantity(value) {
 
 export function sanitizeExtraction(result) {
   const warnings = [...(result.warnings || [])];
-  let skipped = 0;
+  let skipped = 0, repairedAges = 0;
   const lines = (result.lines || []).flatMap(line => {
     const name = stripListPrefix(line.name);
     if (!name || isServiceLine(name) || isLocationLine(name)) { skipped++; return []; }
-    return [{ ...line, name }];
+    const height = String(line.height || "").trim();
+    const age = String(line.age || "").trim();
+    const misplacedAge = !age && /(?:^|\s)(?:лет|года?|год)(?=$|[\s.,;])/iu.test(height) ? height : "";
+    if (misplacedAge) repairedAges++;
+    return [{ ...line, name, height: misplacedAge ? "" : height, age: age || misplacedAge }];
   });
   if (skipped) warnings.push("Пропущены служебные строки и населённые пункты: " + skipped + ".");
+  if (repairedAges) warnings.push("Возраст отделён от высоты: " + repairedAges + " поз.");
   return { lines, warnings: warnings.slice(0, 10) };
 }
 

@@ -11,7 +11,13 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
   const enabled = env.EGOR_ENABLED === "true";
   const catalogClient = catalog || new EgorCatalog({ accountUrl: env.WEBASYST_ACCOUNT_URL || "https://onlyflora.ru", token: env.EGOR_WEBASYST_TOKEN });
   const ready = enabled && Boolean(catalog || env.EGOR_WEBASYST_TOKEN);
-  const photoReady = Boolean(env.EGOR_OPENAI_KEY && env.EGOR_OPENAI_MODEL);
+  const timewebPhotoReady = Boolean(env.EGOR_TIMEWEB_AI_KEY);
+  const openaiPhotoReady = Boolean(env.EGOR_OPENAI_KEY && env.EGOR_OPENAI_MODEL);
+  const photoReady = timewebPhotoReady || openaiPhotoReady;
+  const photoProvider = timewebPhotoReady ? "timeweb" : openaiPhotoReady ? "openai" : "none";
+  const photoOptions = timewebPhotoReady
+    ? { apiKey: env.EGOR_TIMEWEB_AI_KEY, model: env.EGOR_TIMEWEB_AI_MODEL || "openai/gpt-6-luna", provider: "timeweb" }
+    : { apiKey: env.EGOR_OPENAI_KEY, model: env.EGOR_OPENAI_MODEL, provider: "openai" };
   let busy = false;
   const publicDir = fileURLToPath(new URL("./public/", import.meta.url));
   router.use((_req, res, next) => {
@@ -24,7 +30,7 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
     // The assistant is framed by Only Test; CSP restricts the permitted parents.
     res.removeHeader("X-Frame-Options"); next();
   });
-  router.get("/status", (_req, res) => res.json({ ready, textReady: true, photoReady: ready && photoReady, preview: true }));
+  router.get("/status", (_req, res) => res.json({ ready, textReady: true, photoReady: ready && photoReady, photoProvider, preview: true }));
   router.use("/api", rateLimit({ windowMs: 60000, limit: 10, standardHeaders: true, legacyHeaders: false,
     message: { error: "Слишком много запросов. Попробуйте через минуту." } }));
   router.use("/api", express.json({ limit: "8mb" }));
@@ -48,7 +54,7 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
   router.post("/api/extract", async (req, res, next) => {
     try {
       if (req.body.image) {
-        res.json(await recognize(req.body.image, { apiKey: env.EGOR_OPENAI_KEY, model: env.EGOR_OPENAI_MODEL }));
+        res.json(await recognize(req.body.image, photoOptions));
       } else {
         const text = req.body.text;
         if (typeof text !== "string" || !text.trim() || text.length > 10000) return res.status(400).json({ error: "Введите список до 10 000 символов." });

@@ -178,8 +178,37 @@ test("photo retries an unavailable configured model and sanitizes the result", a
     ] });
     return new Response(JSON.stringify({ status: "completed", output: [{ content: [{ type: "output_text", text: output }] }] }));
   } });
-  assert.deepEqual(models, ["wrong-model", "gpt-4o-mini"]);
+  assert.deepEqual(models, ["wrong-model", "gpt-6-luna"]);
   assert.equal(result.lines.length, 1); assert.equal(result.lines[0].name, "Туя Смарагд");
+});
+test("photo uses Timeweb AI Gateway from a Russian deployment and deletes the transient file", async () => {
+  const image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6nXcAAAAASUVORK5CYII=";
+  const calls = [];
+  const output = JSON.stringify({ warnings: [], lines: [
+    { name: "Туя Смарагд", quantity: 2, height: "60–80 см", girth: "", container: "C3", uncertain: false, note: "" },
+  ] });
+  const result = await recognizePhoto(image, { apiKey: "timeweb-private-key", model: "openai/gpt-6-luna", provider: "timeweb", fetchImpl: async (url, options) => {
+    calls.push({ url, options });
+    if (url.endsWith("/files") && options.method === "POST") return new Response(JSON.stringify({ id: "file-1" }));
+    if (url.endsWith("/responses")) return new Response(JSON.stringify({ status: "completed", output: [{ content: [{ type: "output_text", text: output }] }] }));
+    if (url.endsWith("/files/file-1") && options.method === "DELETE") return new Response(JSON.stringify({ deleted: true }));
+    throw new Error("unexpected request");
+  } });
+  assert.equal(result.lines[0].name, "Туя Смарагд");
+  assert.equal(calls.length, 3);
+  assert.equal(calls[0].url, "https://api.timeweb.ai/v1/files");
+  assert.equal(calls[0].options.body.get("purpose"), "user_data");
+  assert.equal(calls[0].options.body.get("target_model_names"), "openai/gpt-6-luna");
+  assert.match(calls[0].options.headers.Authorization, /timeweb-private-key/);
+  const request = JSON.parse(calls[1].options.body);
+  assert.equal(request.input[0].content[1].file_id, "file-1");
+  assert.equal(calls[2].options.method, "DELETE");
+});
+test("direct OpenAI region rejection recommends the Timeweb gateway", async () => {
+  const image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6nXcAAAAASUVORK5CYII=";
+  await assert.rejects(() => recognizePhoto(image, { apiKey: "private-key", model: "gpt-6-luna", fetchImpl: async () =>
+    new Response(JSON.stringify({ error: { code: "unsupported_country_region_territory" } }), { status: 403 })
+  }), /Timeweb AI Gateway/);
 });
 test("enabled assistant searches the catalog without asking visitors for a password", async t => {
   const app = express(); let calls = 0;
@@ -203,4 +232,13 @@ test("disabled preview cannot call upstream services", async t => {
   const parsed = await fetch(base + "/api/parse", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: "Дерен белый — 50 шт." }) });
   assert.equal(parsed.status, 200); assert.equal((await parsed.json()).lines[0].quantity, 50);
   assert.equal((await fetch(base + "/api/extract", { method: "POST" })).status, 503);
+});
+test("status prefers a configured Timeweb gateway for photo recognition", async t => {
+  const app = express();
+  const env = { EGOR_ENABLED: "true", EGOR_TIMEWEB_AI_KEY: "private-key" };
+  app.use("/egor", createEgorRouter({ env, catalog: { find: async () => ({ products: [], complete: true }) } }));
+  const server = app.listen(0, "127.0.0.1"); await new Promise(resolve => server.on("listening", resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const status = await (await fetch(`http://127.0.0.1:${server.address().port}/egor/status`)).json();
+  assert.equal(status.photoReady, true); assert.equal(status.photoProvider, "timeweb");
 });

@@ -126,13 +126,19 @@ test("Egor starts catalog search without a hidden confirmation gate", async () =
   assert.match(app, /api\("plan", \{ lines, strategy: \$\("strategy"\)\.value, confirmed: true \}\)/);
 });
 
-test("marketplace links open the Egor plant picker", async () => {
+test("marketplace opens its page and shows the Egor picker banner below the hero", async () => {
   const theme = await readFile("egor/public/theme.js", "utf8");
   const widget = await readFile("egor/public/widget.js", "utf8");
-  assert.equal((theme.match(/data-of-open-egor/g) || []).length, 5);
+  const css = await readFile("egor/public/theme.css", "utf8");
+  assert.match(theme, /const isMarketplace = new Set\(\["\/category\/market", "\/market"\]\)\.has\(path\)/);
+  assert.match(theme, /class="of-market-picker"[^>]+data-of-open-egor/);
+  assert.match(theme, /<strong>Подбор растений<\/strong>/);
+  assert.equal((theme.match(/data-of-open-egor/g) || []).length, 2);
   assert.match(theme, /event\.preventDefault\(\)/);
   assert.match(theme, /new CustomEvent\("onlyflora:open-egor"\)/);
+  assert.match(widget, /launcher\.hidden = marketplacePage/);
   assert.match(widget, /document\.addEventListener\("onlyflora:open-egor", openPanel\)/);
+  assert.match(css, /\.of-market-picker/);
 });
 
 test("onlytest product cards use the plant placeholder for missing or broken photos", async () => {

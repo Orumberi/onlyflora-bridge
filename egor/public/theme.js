@@ -138,6 +138,7 @@
   const path = location.pathname.replace(/\/+$/, "") || "/";
   const homePaths = new Set(["/", "/site"]);
   const isHome = homePaths.has(path);
+  const isMarketplace = new Set(["/category/market", "/market"]).has(path);
 
   const normalize = value => String(value || "").replace(/\s+/g, " ").trim().toLocaleLowerCase("ru");
   const oldBody = document.body;
@@ -318,7 +319,7 @@
       <div class="of-nav-wrap">
         <nav class="of-nav" aria-label="Основное меню">
           <a href="${escapeHtml(links.improvement)}">Благоустройство</a>
-          <a href="${escapeHtml(links.marketplace)}" data-of-open-egor aria-haspopup="dialog">Торговая площадка</a>
+          <a href="${escapeHtml(links.marketplace)}">Торговая площадка</a>
           <a href="${escapeHtml(links.housing)}">Озеленение ЖК</a>
           <a href="${escapeHtml(links.landscape)}">Ландшафтный дизайн</a>
           <a href="${escapeHtml(links.care)}">Уход и материалы</a>
@@ -330,9 +331,19 @@
           <span class="of-preview-badge">Only Test — предпросмотр</span>
         </nav>
       </div>
+      ${isMarketplace ? `
+      <section class="of-hero of-marketplace-hero"${hero ? ` style="--of-hero-image:url('${escapeHtml(hero)}')"` : ""}>
+        <div class="of-hero-copy"><h1>Торговая площадка</h1><p>Предложения питомников и садовых центров со всей России</p></div>
+      </section>
+      <button class="of-market-picker" type="button" data-of-open-egor aria-haspopup="dialog">
+        <span class="of-market-picker-icon" aria-hidden="true">${logoMark()}</span>
+        <span class="of-market-picker-copy"><strong>Подбор растений</strong><small>Егор Григорьевич подберёт реальные предложения питомников</small></span>
+        <span class="of-market-picker-action">Начать подбор →</span>
+      </button>
+      ` : ""}
       ${isHome ? `
       <section class="of-hero"${hero ? ` style="--of-hero-image:url('${escapeHtml(hero)}')"` : ""}>
-        <div class="of-hero-copy"><h1>Торговая площадка</h1><p>Предложения питомников и садовых центров со всей России</p><a class="of-primary" href="${escapeHtml(links.marketplace)}" data-of-open-egor aria-haspopup="dialog">Открыть торговую площадку</a></div>
+        <div class="of-hero-copy"><h1>Торговая площадка</h1><p>Предложения питомников и садовых центров со всей России</p><a class="of-primary" href="${escapeHtml(links.marketplace)}">Открыть торговую площадку</a></div>
       </section>
       <section class="of-benefits" aria-label="Преимущества OnlyFlora">
         <div class="of-benefit"><span class="of-benefit-icon">♧</span><span><strong>50+ садовых центров</strong>в одном каталоге</span></div>
@@ -341,10 +352,10 @@
         <div class="of-benefit"><span class="of-benefit-icon">♧</span><span><strong>Растения</strong>для любого проекта</span></div>
       </section>
       <section class="of-section">
-        <div class="of-section-head"><h2>Категории</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}" data-of-open-egor aria-haspopup="dialog">Смотреть все →</a></div>
+        <div class="of-section-head"><h2>Категории</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}">Смотреть все →</a></div>
         <div class="of-category-grid">${categoryCards}</div>
       </section>
-      ${products.length ? `<section class="of-section"><div class="of-section-head"><h2>Популярные растения</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}" data-of-open-egor aria-haspopup="dialog">В каталог →</a></div><div class="of-product-grid">${productCards}</div></section>` : ""}
+      ${products.length ? `<section class="of-section"><div class="of-section-head"><h2>Популярные растения</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}">В каталог →</a></div><div class="of-product-grid">${productCards}</div></section>` : ""}
       <footer class="of-footer">
         <div class="of-footer-brand">Only<span>Flora</span><small>Бедный не имеет тени</small></div>
         <nav aria-label="Юридическая информация">

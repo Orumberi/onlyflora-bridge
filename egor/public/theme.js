@@ -288,7 +288,18 @@
     external: true
   });
   const products = isHome ? getProducts() : [];
-  const hero = assetUrl("assets/marketplace-hero.jpg");
+  const seasonNames = ["winter", "spring", "summer", "autumn"];
+  const month = new Date().getMonth();
+  const calendarSeason = month === 11 || month <= 1
+    ? "winter"
+    : month <= 4
+      ? "spring"
+      : month <= 7
+        ? "summer"
+        : "autumn";
+  const requestedSeason = new URLSearchParams(location.search).get("of_season");
+  const heroSeason = seasonNames.includes(requestedSeason) ? requestedSeason : calendarSeason;
+  const hero = assetUrl(`assets/marketplace-hero-${heroSeason}.jpg`);
   const catalogHref = findLink(["Торговая площадка"], "/category/market/");
   const links = {
     greenery: findLink(["Озеленение", "Каталог растений"], catalogHref),
@@ -360,7 +371,7 @@
         </nav>
       </div>
       ${isMarketplace ? `
-      <section class="of-hero of-marketplace-hero"${hero ? ` style="--of-hero-image:url('${escapeHtml(hero)}')"` : ""}>
+      <section class="of-hero of-marketplace-hero" data-of-season="${heroSeason}"${hero ? ` style="--of-hero-image:url('${escapeHtml(hero)}')"` : ""}>
         <div class="of-hero-copy"><h1>Торговая площадка</h1><p>Предложения питомников и садовых центров со всей России</p></div>
       </section>
       <button class="of-market-picker" type="button" data-of-open-egor aria-haspopup="dialog">
@@ -370,7 +381,7 @@
       </button>
       ` : ""}
       ${isHome ? `
-      <section class="of-hero"${hero ? ` style="--of-hero-image:url('${escapeHtml(hero)}')"` : ""}>
+      <section class="of-hero" data-of-season="${heroSeason}"${hero ? ` style="--of-hero-image:url('${escapeHtml(hero)}')"` : ""}>
         <div class="of-hero-copy"><h1>Торговая площадка</h1><p>Предложения питомников и садовых центров со всей России</p><a class="of-primary" href="${escapeHtml(links.marketplace)}">Открыть торговую площадку</a></div>
       </section>
       <section class="of-benefits" aria-label="Преимущества OnlyFlora">
@@ -399,6 +410,28 @@
 
   oldBody.prepend(root);
   oldBody.classList.add(isHome ? "of-modern-active" : "of-modern-header-active");
+
+  const parallaxHeroes = [...root.querySelectorAll(".of-hero")];
+  if (parallaxHeroes.length && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    let parallaxFrame = 0;
+    const updateHeroParallax = () => {
+      parallaxFrame = 0;
+      const viewportCenter = innerHeight / 2;
+      for (const heroElement of parallaxHeroes) {
+        const bounds = heroElement.getBoundingClientRect();
+        if (bounds.bottom < -80 || bounds.top > innerHeight + 80) continue;
+        const distance = bounds.top + bounds.height / 2 - viewportCenter;
+        const offset = Math.max(-44, Math.min(44, distance * -.09));
+        heroElement.style.setProperty("--of-parallax-y", `${offset.toFixed(1)}px`);
+      }
+    };
+    const requestHeroParallax = () => {
+      if (!parallaxFrame) parallaxFrame = requestAnimationFrame(updateHeroParallax);
+    };
+    addEventListener("scroll", requestHeroParallax, { passive: true });
+    addEventListener("resize", requestHeroParallax, { passive: true });
+    updateHeroParallax();
+  }
 
   root.querySelectorAll("[data-of-open-egor]").forEach(link => {
     link.addEventListener("click", event => {

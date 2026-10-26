@@ -320,15 +320,26 @@ body.of-modern-active > footer {
 
 .of-hero {
   position: relative;
+  isolation: isolate;
   min-height: 350px;
   margin-top: 0;
   border-radius: 0 0 5px 5px;
   overflow: hidden;
   display: flex;
   align-items: center;
+  background: #123e29;
+}
+
+.of-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  inset: -11% -3%;
   background: linear-gradient(90deg, #123e29 0%, rgba(9, 48, 30, .76) 36%, rgba(9, 48, 30, .08) 75%), var(--of-hero-image, linear-gradient(135deg, #32684b, #a8c686));
   background-position: center;
   background-size: cover;
+  transform: translate3d(0, var(--of-parallax-y, 0px), 0) scale(1.035);
+  will-change: transform;
 }
 
 .of-hero::after {
@@ -337,6 +348,10 @@ body.of-modern-active > footer {
   inset: 0;
   background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,.18));
   pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .of-hero::before { transform: scale(1.035); will-change: auto; }
 }
 
 .of-hero-copy {

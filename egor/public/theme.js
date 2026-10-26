@@ -110,18 +110,46 @@
     }
   }
 
+  const marketplaceRulesPath = "/site/marketplace-rules/";
+
+  function bindMarketplaceRulesLink(root = document) {
+    const aboutSelector = 'a[href="/about/"],a[href$="/about/"]';
+    const aboutLinks = root.matches?.(aboutSelector)
+      ? [root]
+      : [...(root.querySelectorAll?.(aboutSelector) || [])];
+
+    for (const aboutLink of aboutLinks) {
+      const listItem = aboutLink.closest("li");
+      const submenu = [...(listItem?.children || [])].find(child => child.tagName === "UL");
+      if (!submenu) continue;
+      const alreadyAdded = [...submenu.querySelectorAll("a[href]")]
+        .some(link => new URL(link.href, location.origin).pathname === marketplaceRulesPath);
+      if (alreadyAdded) continue;
+
+      const item = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = marketplaceRulesPath;
+      link.title = "Правила работы торговой площадки";
+      link.textContent = "Правила работы торговой площадки";
+      item.append(link);
+      submenu.append(item);
+    }
+  }
+
   document.addEventListener("error", event => {
     if (event.target instanceof HTMLImageElement) useProductPlaceholder(event.target);
   }, true);
 
   applyProductFallbacks();
   bindCookieDetails();
+  bindMarketplaceRulesLink();
   new MutationObserver(records => {
     for (const record of records) {
       for (const node of record.addedNodes) {
         if (node instanceof Element) {
           applyProductFallbacks(node);
           bindCookieDetails(node);
+          bindMarketplaceRulesLink(node);
         }
       }
     }

@@ -318,7 +318,7 @@
       <div class="of-nav-wrap">
         <nav class="of-nav" aria-label="Основное меню">
           <a href="${escapeHtml(links.improvement)}">Благоустройство</a>
-          <a href="${escapeHtml(links.marketplace)}">Торговая площадка</a>
+          <a href="${escapeHtml(links.marketplace)}" data-of-open-egor aria-haspopup="dialog">Торговая площадка</a>
           <a href="${escapeHtml(links.housing)}">Озеленение ЖК</a>
           <a href="${escapeHtml(links.landscape)}">Ландшафтный дизайн</a>
           <a href="${escapeHtml(links.care)}">Уход и материалы</a>
@@ -332,7 +332,7 @@
       </div>
       ${isHome ? `
       <section class="of-hero"${hero ? ` style="--of-hero-image:url('${escapeHtml(hero)}')"` : ""}>
-        <div class="of-hero-copy"><h1>Торговая площадка</h1><p>Предложения питомников и садовых центров со всей России</p><a class="of-primary" href="${escapeHtml(links.marketplace)}">Открыть торговую площадку</a></div>
+        <div class="of-hero-copy"><h1>Торговая площадка</h1><p>Предложения питомников и садовых центров со всей России</p><a class="of-primary" href="${escapeHtml(links.marketplace)}" data-of-open-egor aria-haspopup="dialog">Открыть торговую площадку</a></div>
       </section>
       <section class="of-benefits" aria-label="Преимущества OnlyFlora">
         <div class="of-benefit"><span class="of-benefit-icon">♧</span><span><strong>50+ садовых центров</strong>в одном каталоге</span></div>
@@ -341,10 +341,10 @@
         <div class="of-benefit"><span class="of-benefit-icon">♧</span><span><strong>Растения</strong>для любого проекта</span></div>
       </section>
       <section class="of-section">
-        <div class="of-section-head"><h2>Категории</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}">Смотреть все →</a></div>
+        <div class="of-section-head"><h2>Категории</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}" data-of-open-egor aria-haspopup="dialog">Смотреть все →</a></div>
         <div class="of-category-grid">${categoryCards}</div>
       </section>
-      ${products.length ? `<section class="of-section"><div class="of-section-head"><h2>Популярные растения</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}">В каталог →</a></div><div class="of-product-grid">${productCards}</div></section>` : ""}
+      ${products.length ? `<section class="of-section"><div class="of-section-head"><h2>Популярные растения</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}" data-of-open-egor aria-haspopup="dialog">В каталог →</a></div><div class="of-product-grid">${productCards}</div></section>` : ""}
       <footer class="of-footer">
         <div class="of-footer-brand">Only<span>Flora</span><small>Бедный не имеет тени</small></div>
         <nav aria-label="Юридическая информация">
@@ -360,6 +360,13 @@
 
   oldBody.prepend(root);
   oldBody.classList.add(isHome ? "of-modern-active" : "of-modern-header-active");
+
+  root.querySelectorAll("[data-of-open-egor]").forEach(link => {
+    link.addEventListener("click", event => {
+      event.preventDefault();
+      document.dispatchEvent(new CustomEvent("onlyflora:open-egor"));
+    });
+  });
 
   const searchForm = root.querySelector(".of-search");
   const searchInput = searchForm?.elements.namedItem(searchName);

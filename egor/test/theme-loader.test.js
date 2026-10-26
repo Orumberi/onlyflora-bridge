@@ -126,6 +126,15 @@ test("Egor starts catalog search without a hidden confirmation gate", async () =
   assert.match(app, /api\("plan", \{ lines, strategy: \$\("strategy"\)\.value, confirmed: true \}\)/);
 });
 
+test("marketplace links open the Egor plant picker", async () => {
+  const theme = await readFile("egor/public/theme.js", "utf8");
+  const widget = await readFile("egor/public/widget.js", "utf8");
+  assert.equal((theme.match(/data-of-open-egor/g) || []).length, 5);
+  assert.match(theme, /event\.preventDefault\(\)/);
+  assert.match(theme, /new CustomEvent\("onlyflora:open-egor"\)/);
+  assert.match(widget, /document\.addEventListener\("onlyflora:open-egor", openPanel\)/);
+});
+
 test("onlytest product cards use the plant placeholder for missing or broken photos", async () => {
   const theme = await readFile("egor/public/theme.js", "utf8");
   const css = await readFile("egor/public/theme.css", "utf8");

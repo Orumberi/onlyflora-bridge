@@ -42,6 +42,7 @@
     document.body.classList.remove("of-egor-open"); launcher.focus();
   }
   launcher.addEventListener("click", openPanel); close.addEventListener("click", closePanel); backdrop.addEventListener("click", closePanel);
+  document.addEventListener("onlyflora:open-egor", openPanel);
   document.addEventListener("keydown", event => { if (event.key === "Escape" && panel.classList.contains("open")) closePanel(); });
   window.addEventListener("message", async event => {
     if (event.source !== frame.contentWindow || event.data?.type !== "onlyflora-egor-cart") return;

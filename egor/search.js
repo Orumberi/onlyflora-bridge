@@ -27,7 +27,7 @@ export class EgorCatalog {
       for (let page = 0; page < 5; page++) {
         if (requests >= 12 || Date.now() >= deadline) { complete = false; break outer; }
         requests++;
-        const data = await this.get("shop.product.search", { hash: `search/name*=${term}`, offset: page * 100, limit: 100, fields: "id,name,status,currency,skus,order_count_min,order_count_step,order_multiplicity_factor,count_denominator", escape: 0 });
+        const data = await this.get("shop.product.search", { hash: `search/name*=${term}`, offset: page * 100, limit: 100, fields: "id,name,status,currency,skus,frontend_url,order_count_min,order_count_step,order_multiplicity_factor,count_denominator", escape: 0 });
         const batch = Object.values(data.products || {});
         for (const product of batch) products.set(String(product.id), product);
         if (batch.length < 100 || (Number.isFinite(Number(data.count)) && (page + 1) * 100 >= Number(data.count))) break;

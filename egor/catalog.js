@@ -70,6 +70,11 @@ function alternativeScore(line, offer, productIds, wantedRange) {
 
 export function publicOffers(product) {
   if (String(product.status) !== "1" || product.currency !== "RUB") return [];
+  let productUrl = "";
+  try {
+    const parsed = new URL(String(product.frontend_url || ""), "https://onlyflora.invalid/");
+    if (parsed.origin === "https://onlyflora.invalid") productUrl = parsed.pathname + parsed.search + parsed.hash;
+  } catch {}
   return Object.values(product.skus || {}).flatMap(sku => {
     if (String(sku.available) !== "1" || String(sku.status ?? 1) !== "1") return [];
     const modern = String(sku.name || "").includes(" · ");
@@ -95,7 +100,7 @@ export function publicOffers(product) {
       || Number(product.count_denominator ?? 1) !== 1 || (count !== null && (!Number.isFinite(count) || count < 0))) return [];
     return [{
       productId: String(product.id), skuId: String(sku.id), sku: String(sku.sku || ""),
-      name: product.name, height, range, girth, girthRange: parsedGirthRange, container, nursery,
+      name: product.name, productUrl, height, range, girth, girthRange: parsedGirthRange, container, nursery,
       priceKopecks: Math.round(price * 100), count: count === null ? null : Math.floor(count),
     }];
   });

@@ -18,6 +18,12 @@ test("real SKU 21264: 25 plants cost 31875 RUB, not the master card's other vari
   assert.equal(result.rows[0].allocations[0].skuId, "21264");
   assert.equal(result.rows[0].allocations[0].nursery, "Садовый Лабиринт");
 });
+test("public offers expose only a safe storefront product URL", () => {
+  const copy = structuredClone(product); copy.frontend_url = "/tuya-zapadnaya-smaragd/";
+  assert.equal(publicOffers(copy)[0].productUrl, "/tuya-zapadnaya-smaragd/");
+  copy.frontend_url = "https://attacker.example/steal";
+  assert.equal(publicOffers(copy)[0].productUrl, "");
+});
 test("current multi-nursery records support nursery-first names and single heights", () => {
   const result = buildPlan([line(25, { height: "110 см", container: "WRB" })], snapshot);
   assert.equal(result.complete, true);
@@ -144,6 +150,7 @@ test("catalog pagination includes later offers and encodes an authenticated GET"
   assert.equal(calls[1].url.searchParams.get("offset"), "100");
   assert.equal(calls[0].options.headers.Authorization, "Bearer test-catalog-token");
   assert.equal(calls[0].options.body, undefined);
+  assert.match(calls[0].url.searchParams.get("fields"), /frontend_url/);
 });
 test("truncated catalog cannot claim a complete search", async () => {
   const catalog = new EgorCatalog({ token: "test", fetchImpl: async () => new Response(JSON.stringify({ count: 1000, products: Array.from({ length: 100 }, (_, id) => ({ id })) })) });

@@ -47,6 +47,10 @@ function recalculatePlan(result) {
   result.totalKopecks = result.rows.flatMap(row => row.allocations).reduce((sum, offer) => sum + offer.totalKopecks, 0);
   result.complete = result.searchComplete && result.rows.every(row => row.shortage === 0);
 }
+function openProduct(offer) {
+  if (!offer.productUrl) return;
+  window.parent.postMessage({ type: "onlyflora-egor-product", url: offer.productUrl }, parentOrigin);
+}
 function chooseAlternative(rowIndex, skuId) {
   if (!lastPlan) return;
   const row = lastPlan.rows[rowIndex];
@@ -78,10 +82,16 @@ function renderPlan(result) {
     requestHead.append(node("span", initials(row.request.name), "plant-thumb"), requestText); card.append(requestHead);
     for (const offer of row.allocations) {
       const offerDetails = [offer.height, offer.girth && "обхват " + offer.girth, offer.container, offer.sku].filter(Boolean).join(" · ");
-      const item = node("div", undefined, "offer" + (offer.selectedAlternative ? " selected-alternative" : ""));
+      const item = node(offer.productUrl ? "button" : "div", undefined, "offer" + (offer.productUrl ? " offer-link" : "") + (offer.selectedAlternative ? " selected-alternative" : ""));
+      if (offer.productUrl) {
+        item.type = "button";
+        item.setAttribute("aria-label", `Открыть карточку товара ${offer.name}`);
+        item.addEventListener("click", () => openProduct(offer));
+      }
       const description = node("div", undefined, "offer-description"); description.append(node("strong", offer.name), node("span", offer.nursery), node("small", offerDetails));
       if (offer.selectedAlternative) description.append(node("span", "Выбранная замена", "replacement-label"));
       description.append(node("span", "В наличии: " + (offer.count ?? "уточнить"), "stock"));
+      if (offer.productUrl) description.append(node("span", "Открыть карточку товара →", "product-link-label"));
       const figures = node("div", undefined, "offer-figures"); figures.append(node("strong", money(offer.priceKopecks)), node("span", offer.quantity + " шт."), node("small", money(offer.totalKopecks)));
       item.append(description, figures); card.append(item);
     }
@@ -126,14 +136,19 @@ $("plan").addEventListener("click", () => run($("plan"), async () => {
 }));
 $("add-cart").addEventListener("click", () => {
   if (!lastPlan) return;
-  const items = lastPlan.rows.flatMap(row => row.allocations.map(offer => ({ skuId: offer.skuId, quantity: offer.quantity, name: offer.name })));
+  const items = lastPlan.rows.flatMap(row => row.allocations.map(offer => ({ productId: offer.productId, skuId: offer.skuId, quantity: offer.quantity, name: offer.name })));
   if (!items.length) return notice("Нет подобранных товаров для добавления.", true);
+  $("add-cart").disabled = true;
+  $("add-cart").textContent = "Добавляю в корзину…";
   window.parent.postMessage({ type: "onlyflora-egor-cart", items }, parentOrigin);
   notice("Передаю выбранные предложения в корзину…");
 });
 window.addEventListener("message", event => {
   if (parentOrigin !== "*" && event.origin !== parentOrigin) return;
   if (event.data?.type !== "onlyflora-egor-cart-result") return;
+  $("add-cart").disabled = false;
+  $("add-cart").textContent = event.data.ok ? "Добавлено в корзину ✓" : "Добавить выбранное в корзину";
+  if (event.data.ok) setTimeout(() => { $("add-cart").textContent = "Добавить выбранное в корзину"; }, 2500);
   notice(event.data.ok ? "Выбранные предложения добавлены в корзину." : "Не удалось добавить товары автоматически. Скачайте подбор и отправьте менеджеру.", !event.data.ok);
 });
 $("strategy").addEventListener("change", resetResult);

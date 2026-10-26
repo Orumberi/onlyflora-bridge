@@ -124,6 +124,11 @@ test("Egor starts catalog search without a hidden confirmation gate", async () =
   assert.doesNotMatch(html, /id="confirmed"/);
   assert.doesNotMatch(app, /\$\("confirmed"\)/);
   assert.match(app, /api\("plan", \{ lines, strategy: \$\("strategy"\)\.value, confirmed: true \}\)/);
+  assert.match(app, /productId: offer\.productId/);
+  assert.match(app, /onlyflora-egor-product/);
+  const widget = await readFile("egor/public/widget.js", "utf8");
+  assert.match(widget, /product_id: String\(item\.productId\)/);
+  assert.match(widget, /destination\.origin === location\.origin/);
 });
 
 test("marketplace opens its page and shows the Egor picker banner below the hero", async () => {

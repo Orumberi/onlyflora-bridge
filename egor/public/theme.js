@@ -237,7 +237,7 @@
   }
 
   function logoMark() {
-    return '<svg viewBox="0 0 48 48" width="42" height="42" aria-hidden="true"><rect x="1" y="1" width="46" height="46" rx="12" fill="#fff"/><path d="M9.5 13.5C20 13.7 28.1 19 30.9 30.6c-9.5 1.2-16.6-2.3-19.6-8.4-1.4-2.8-1.9-5.7-1.8-8.7Z" fill="#68c900"/><path d="M38.5 14.2c-8.9.3-15.2 4.8-17.7 15.2 7.9.8 13.7-2.3 16.2-7.7 1.2-2.5 1.6-5 1.5-7.5Z" fill="#071d13"/><circle cx="21.2" cy="27.5" r="3.1" fill="#fff"/></svg>';
+    return '<svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true"><rect x="1" y="1" width="62" height="62" rx="17" fill="#fff"/><path d="M10.5 17.2c15.1.1 25 7.3 28.8 22.4-11.7 1.7-21.5-2.6-26-10.3-2-3.5-3-7.5-2.8-12.1Z" fill="#69d400"/><path d="M53.7 17.5c-11.8.5-20.7 6.8-24.1 22.2 10.5 1.2 18.4-3.2 22-11.1 1.7-3.7 2.4-7.4 2.1-11.1Z" fill="#071a13"/><circle cx="29.9" cy="37.7" r="4.8" fill="#fff"/></svg>';
   }
 
   // Shop-Script's public search route is stable. Reading form.action from the
@@ -336,7 +336,7 @@
     <div class="of-shell">
       <header class="of-topbar">
         <a class="of-brand" href="/" aria-label="OnlyFlora — главная"><span class="of-brand-mark">${logoMark()}</span><span class="of-brand-copy"><span class="of-brand-word">Only<span>Flora</span></span><small>Бедный не имеет тени</small></span></a>
-        <form class="of-search" action="${escapeHtml(searchAction)}" method="get"><input type="search" name="${escapeHtml(searchName)}" placeholder="Поиск растений, питомников, товаров..." aria-label="Поиск" autocomplete="off" required><button type="submit" aria-label="Найти"></button><div class="of-live-result" aria-live="polite" hidden></div></form>
+        <form class="of-search" action="${escapeHtml(searchAction)}" method="get"><input type="search" name="${escapeHtml(searchName)}" placeholder="Найти растение или товар" aria-label="Поиск растений и товаров" autocomplete="off" required><button type="submit" aria-label="Найти"></button><div class="of-live-result" aria-live="polite" hidden></div></form>
         <a class="of-location" href="#" aria-label="Регион: Москва">Москва⌄</a>
         <nav class="of-actions" aria-label="Личный раздел">
           <a class="of-action" href="${escapeHtml(links.favorites)}"><span class="of-action-icon">♡</span><span>Избранное</span></a>

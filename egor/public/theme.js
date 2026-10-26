@@ -467,6 +467,48 @@
     return response.text();
   }
 
+  function prepareLiveSearch() {
+    if (!(searchResult instanceof HTMLElement)) return;
+    for (const item of searchResult.querySelectorAll(".list-search li:not(.all-results)")) {
+      const anchor = item.querySelector("a[href]");
+      if (!(anchor instanceof HTMLAnchorElement)) continue;
+      const image = anchor.querySelector("img");
+      const details = [...anchor.children].find(child => child.querySelector?.(".pricing"));
+      const title = [...(details?.children || [])]
+        .find(child => !child.classList.contains("pricing"))?.textContent?.replace(/\s+/g, " ").trim()
+        || image?.alt?.trim()
+        || "Товар";
+      const price = details?.querySelector(".price")?.textContent?.replace(/\s+/g, " ").trim()
+        || details?.querySelector(".pricing")?.textContent?.replace(/\s+/g, " ").trim()
+        || "";
+      const cardImage = image instanceof HTMLImageElement ? image : document.createElement("img");
+      if (!cardImage.src || missingImagePattern.test(cardImage.src)) cardImage.src = productPlaceholder;
+      cardImage.alt = title;
+      cardImage.className = "of-search-card-image";
+      cardImage.loading = "eager";
+
+      const copy = document.createElement("span");
+      copy.className = "of-search-card-copy";
+      const name = document.createElement("span");
+      name.className = "of-search-card-title";
+      name.textContent = title;
+      copy.append(name);
+      if (price) {
+        const amount = document.createElement("span");
+        amount.className = "of-search-card-price";
+        amount.textContent = price;
+        copy.append(amount);
+      }
+      anchor.className = "of-search-card";
+      anchor.replaceChildren(cardImage, copy);
+    }
+    const allResults = searchResult.querySelector(".list-search li.all-results a[href]");
+    if (allResults instanceof HTMLAnchorElement) {
+      allResults.className = "of-search-all";
+      allResults.textContent = "Все результаты →";
+    }
+  }
+
   async function updateLiveSearch() {
     if (!(searchInput instanceof HTMLInputElement) || !(searchResult instanceof HTMLElement)) return;
     const raw = searchInput.value.trim();
@@ -483,6 +525,7 @@
       if (sequence !== searchSequence || searchInput.value.trim() !== raw) return;
       if (usedQuery !== raw && /<li\b/i.test(html)) searchInput.value = usedQuery;
       searchResult.innerHTML = html;
+      prepareLiveSearch();
       searchResult.hidden = !/<li\b/i.test(html);
     } catch {
       if (sequence === searchSequence) hideLiveSearch();

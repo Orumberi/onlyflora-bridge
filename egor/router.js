@@ -16,7 +16,7 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
   const photoReady = timewebPhotoReady || openaiPhotoReady;
   const photoProvider = timewebPhotoReady ? "timeweb" : openaiPhotoReady ? "openai" : "none";
   const photoOptions = timewebPhotoReady
-    ? { apiKey: env.EGOR_TIMEWEB_AI_KEY, model: env.EGOR_TIMEWEB_AI_MODEL || "openai/gpt-6-luna", provider: "timeweb" }
+    ? { apiKey: env.EGOR_TIMEWEB_AI_KEY, model: env.EGOR_TIMEWEB_AI_MODEL || "openai/gpt-4.1-mini", provider: "timeweb" }
     : { apiKey: env.EGOR_OPENAI_KEY, model: env.EGOR_OPENAI_MODEL, provider: "openai" };
   let busy = false;
   const publicDir = fileURLToPath(new URL("./public/", import.meta.url));

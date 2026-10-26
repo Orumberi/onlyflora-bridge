@@ -181,28 +181,25 @@ test("photo retries an unavailable configured model and sanitizes the result", a
   assert.deepEqual(models, ["wrong-model", "gpt-6-luna"]);
   assert.equal(result.lines.length, 1); assert.equal(result.lines[0].name, "Туя Смарагд");
 });
-test("photo uses Timeweb AI Gateway from a Russian deployment and deletes the transient file", async () => {
+test("photo uses Timeweb multimodal Chat Completions from a Russian deployment", async () => {
   const image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6nXcAAAAASUVORK5CYII=";
   const calls = [];
   const output = JSON.stringify({ warnings: [], lines: [
     { name: "Туя Смарагд", quantity: 2, height: "60–80 см", girth: "", container: "C3", uncertain: false, note: "" },
   ] });
-  const result = await recognizePhoto(image, { apiKey: "timeweb-private-key", model: "openai/gpt-6-luna", provider: "timeweb", fetchImpl: async (url, options) => {
+  const result = await recognizePhoto(image, { apiKey: "timeweb-private-key", model: "openai/gpt-4.1-mini", provider: "timeweb", fetchImpl: async (url, options) => {
     calls.push({ url, options });
-    if (url.endsWith("/files") && options.method === "POST") return new Response(JSON.stringify({ id: "file-1" }));
-    if (url.endsWith("/responses")) return new Response(JSON.stringify({ status: "completed", output: [{ content: [{ type: "output_text", text: output }] }] }));
-    if (url.endsWith("/files/file-1") && options.method === "DELETE") return new Response(JSON.stringify({ deleted: true }));
+    if (url.endsWith("/chat/completions")) return new Response(JSON.stringify({ choices: [{ message: { content: output } }] }));
     throw new Error("unexpected request");
   } });
   assert.equal(result.lines[0].name, "Туя Смарагд");
-  assert.equal(calls.length, 3);
-  assert.equal(calls[0].url, "https://api.timeweb.ai/v1/files");
-  assert.equal(calls[0].options.body.get("purpose"), "user_data");
-  assert.equal(calls[0].options.body.get("target_model_names"), "openai/gpt-6-luna");
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, "https://api.timeweb.ai/v1/chat/completions");
   assert.match(calls[0].options.headers.Authorization, /timeweb-private-key/);
-  const request = JSON.parse(calls[1].options.body);
-  assert.equal(request.input[0].content[1].file_id, "file-1");
-  assert.equal(calls[2].options.method, "DELETE");
+  const request = JSON.parse(calls[0].options.body);
+  assert.equal(request.model, "openai/gpt-4.1-mini");
+  assert.equal(request.response_format.type, "json_object");
+  assert.equal(request.messages[1].content[1].image_url.url, image);
 });
 test("direct OpenAI region rejection recommends the Timeweb gateway", async () => {
   const image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6nXcAAAAASUVORK5CYII=";

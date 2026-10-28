@@ -375,6 +375,7 @@
   const heroSeason = seasonNames.includes(requestedSeason) ? requestedSeason : calendarSeason;
   const hero = assetUrl(`assets/marketplace-hero-${heroSeason}.jpg`);
   const catalogHref = findLink(["Торговая площадка"], "/category/market/");
+  const allCategoriesHref = "/category/market/plants/";
   const links = {
     greenery: findLink(["Озеленение", "Каталог растений"], catalogHref),
     improvement: findLink(["Благоустройство"], "/"),
@@ -465,7 +466,7 @@
         <div class="of-benefit"><span class="of-benefit-icon">♧</span><span><strong>Растения</strong>для любого проекта</span></div>
       </section>
       <section class="of-section">
-        <div class="of-section-head"><h2>Категории</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}">Смотреть все →</a></div>
+        <div class="of-section-head"><h2>Категории</h2><a class="of-section-link" href="${escapeHtml(allCategoriesHref)}">Смотреть все →</a></div>
         <div class="of-category-grid">${categoryCards}</div>
       </section>
       ${products.length ? `<section class="of-section"><div class="of-section-head"><h2>Популярные растения</h2><a class="of-section-link" href="${escapeHtml(links.marketplace)}">В каталог →</a></div><div class="of-product-grid">${productCards}</div></section>` : ""}

@@ -136,6 +136,20 @@
     }
   }
 
+  const cartPage = location.pathname.replace(/\/+$/, "") === "/cart";
+
+  function modernizeEmptyCart(root = document) {
+    if (!cartPage) return;
+    const emptyImages = root.matches?.(".error-img")
+      ? [root]
+      : [...(root.querySelectorAll?.(".error-img") || [])];
+    for (const image of emptyImages) {
+      if (image.dataset.ofModernCartEmpty === "1") continue;
+      image.dataset.ofModernCartEmpty = "1";
+      image.style.backgroundImage = `url("${assetUrl("assets/cart-empty-girl.webp")}")`;
+    }
+  }
+
   const categoryPage = location.pathname.replace(/\/+$/, "").startsWith("/category/");
 
   function modernizeCategoryContent() {
@@ -215,6 +229,7 @@
   applyProductFallbacks();
   bindCookieDetails();
   bindMarketplaceRulesLink();
+  modernizeEmptyCart();
   modernizeCategoryContent();
   new MutationObserver(records => {
     for (const record of records) {
@@ -223,6 +238,7 @@
           applyProductFallbacks(node);
           bindCookieDetails(node);
           bindMarketplaceRulesLink(node);
+          modernizeEmptyCart(node);
           modernizeCategoryContent();
         }
       }

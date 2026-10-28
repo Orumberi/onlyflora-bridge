@@ -82,6 +82,22 @@ test("modern homepage uses Shop-Script search, fixed category assets and legal l
   }
 });
 
+test("all categories opens the plant category tree instead of the marketplace landing", async () => {
+  const theme = await readFile("egor/public/theme.js", "utf8");
+  assert.match(theme, /const allCategoriesHref = "\/category\/market\/plants\/"/);
+  assert.match(theme, /href="\$\{escapeHtml\(allCategoriesHref\)\}">Смотреть все/);
+  assert.doesNotMatch(theme, /href="\$\{escapeHtml\(links\.marketplace\)\}">Смотреть все/);
+});
+
+test("empty cart uses the approved OnlyFlora girl instead of the stock woman", async () => {
+  const theme = await readFile("egor/public/theme.js", "utf8");
+  const image = await readFile("egor/public/assets/cart-empty-girl.webp");
+  assert.match(theme, /const cartPage = .*=== "\/cart"/);
+  assert.match(theme, /modernizeEmptyCart/);
+  assert.match(theme, /assets\/cart-empty-girl\.webp/);
+  assert.ok(image.length > 10_000);
+});
+
 test("category assets can load cross-origin inside the Webasyst preview", async () => {
   const router = await readFile("egor/router.js", "utf8");
   assert.match(router, /_req\.path\.startsWith\("\/assets\/"\)/);

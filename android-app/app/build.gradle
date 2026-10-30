@@ -7,7 +7,7 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "ru.onlyflora.mobile"
+        applicationId "ru.onlyflora.app"
         minSdk 24
         targetSdk 35
         versionCode 2

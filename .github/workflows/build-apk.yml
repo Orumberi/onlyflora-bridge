@@ -42,6 +42,25 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.7"
+      - name: Restore stable development signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: onlyflora-android-debug-keystore-v1
+      - name: Prepare stable development signing key
+        run: |
+          mkdir -p "$HOME/.android"
+          if [ ! -f "$HOME/.android/debug.keystore" ]; then
+            keytool -genkeypair -v \
+              -keystore "$HOME/.android/debug.keystore" \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=OnlyFlora Development,O=OnlyFlora,C=RU"
+          fi
       - name: Use the approved OnlyFlora icon
         run: |
           rm android-app/app/src/main/res/drawable/onlyflora_icon.xml
@@ -51,10 +70,10 @@ jobs:
       - name: Build APK
         run: gradle -p android-app :app:assembleDebug --no-daemon --stacktrace
       - name: Name APK
-        run: cp android-app/app/build/outputs/apk/debug/app-debug.apk OnlyFlora-1.1.apk
+        run: cp android-app/app/build/outputs/apk/debug/app-debug.apk OnlyFlora-1.1-clean.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: OnlyFlora-1.1-apk
-          path: OnlyFlora-1.1.apk
+          name: OnlyFlora-1.1-clean-apk
+          path: OnlyFlora-1.1-clean.apk
           if-no-files-found: error
           retention-days: 30

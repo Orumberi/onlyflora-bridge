@@ -1,4 +1,4 @@
-# OnlyFlora Android 1.0
+# OnlyFlora Android 1.1
 
 Installable Android shell for the OnlyFlora mobile application.
 

@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowInsets;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -40,7 +41,17 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " OnlyFloraAndroid/1.0");
+        settings.setUserAgentString(settings.getUserAgentString() + " OnlyFloraAndroid/1.1");
+
+        webView.setOnApplyWindowInsetsListener((view, insets) -> {
+            view.setPadding(
+                    0,
+                    insets.getSystemWindowInsetTop(),
+                    0,
+                    insets.getSystemWindowInsetBottom());
+            return insets;
+        });
+        webView.requestApplyInsets();
 
         CookieManager cookies = CookieManager.getInstance();
         cookies.setAcceptCookie(true);

@@ -1,0 +1,45 @@
+name: Build OnlyFlora APK
+
+on:
+  push:
+    branches: [apk-build-v1]
+    paths:
+      - "android-app/**"
+      - ".github/workflows/build-apk.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+      - name: Install Android platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+      - name: Use the approved OnlyFlora icon
+        run: |
+          rm android-app/app/src/main/res/drawable/onlyflora_icon.xml
+          curl --fail --location --retry 3 \
+            https://onlyflora-mobile.silver-tapir-1656.chatgpt.site/assets/icon-512-v2.png \
+            --output android-app/app/src/main/res/drawable/onlyflora_icon.png
+      - name: Build APK
+        run: gradle -p android-app :app:assembleDebug --no-daemon --stacktrace
+      - name: Name APK
+        run: cp android-app/app/build/outputs/apk/debug/app-debug.apk OnlyFlora-1.0.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OnlyFlora-1.0-apk
+          path: OnlyFlora-1.0.apk
+          if-no-files-found: error
+          retention-days: 30

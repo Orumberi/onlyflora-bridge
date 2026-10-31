@@ -117,6 +117,18 @@ export function nameMatches(request, product) {
   return optionalSpecies(wanted) === optionalSpecies(actual);
 }
 
+export function offersForName(name, products) {
+  const request = { name };
+  const offers = products.filter(product => nameMatches(request, product)).flatMap(publicOffers);
+  const unique = new Map();
+  for (const offer of offers) {
+    const key = offer.skuId || `${normalizeName(offer.nursery)}|${offer.sku}`;
+    if (!unique.has(key)) unique.set(key, offer);
+  }
+  return [...unique.values()].sort((left, right) => left.priceKopecks - right.priceKopecks
+    || left.skuId.localeCompare(right.skuId));
+}
+
 export function buildPlan(lines, products, { strategy = "price", complete = true, checkedAt = new Date().toISOString() } = {}) {
   const projected = products.flatMap(publicOffers);
   const unique = new Map(); const conflicts = new Set();
@@ -130,7 +142,9 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
     else previous.count = previous.count === null || offer.count === null ? null : Math.min(previous.count, offer.count);
   }
   const allOffers = [...unique].filter(([key]) => !conflicts.has(key)).map(([, offer]) => offer);
-  const remaining = new Map(allOffers.map(o => [o.skuId, o.count ?? 0]));
+  // Shop-Script uses null for an unlimited stock balance. Keep it available
+  // without inventing a finite quantity for the customer-facing response.
+  const remaining = new Map(allOffers.map(o => [o.skuId, o.count === null ? Infinity : o.count]));
   const selectedNurseries = new Set();
   const rows = lines.map(line => {
     const matchingProducts = products.filter(p => nameMatches(line, p));
@@ -157,9 +171,10 @@ export function buildPlan(lines, products, { strategy = "price", complete = true
         return a.priceKopecks - b.priceKopecks || a.skuId.localeCompare(b.skuId);
       });
       for (const offer of candidates) {
-        const quantity = Math.min(shortage, remaining.get(offer.skuId));
+        const available = remaining.get(offer.skuId);
+        const quantity = Math.min(shortage, available);
         if (!quantity) continue;
-        remaining.set(offer.skuId, remaining.get(offer.skuId) - quantity);
+        if (Number.isFinite(available)) remaining.set(offer.skuId, available - quantity);
         selectedNurseries.add(offer.nursery);
         allocations.push({ ...offer, quantity, totalKopecks: quantity * offer.priceKopecks });
         shortage -= quantity;

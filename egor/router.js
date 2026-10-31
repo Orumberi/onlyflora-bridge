@@ -3,7 +3,7 @@ import { rateLimit } from "express-rate-limit";
 import { fileURLToPath } from "node:url";
 import { planSchema, parseText } from "./schema.js";
 import { recognizePhoto } from "./vision.js";
-import { buildPlan } from "./catalog.js";
+import { buildPlan, offersForName } from "./catalog.js";
 import { EgorCatalog } from "./search.js";
 
 export function createEgorRouter({ env = process.env, catalog, recognize = recognizePhoto } = {}) {
@@ -60,6 +60,15 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
         if (typeof text !== "string" || !text.trim() || text.length > 10000) return res.status(400).json({ error: "Введите список до 10 000 символов." });
         res.json(parseText(text));
       }
+    } catch (error) { next(error); }
+    finally { res.locals.release(); }
+  });
+  router.post("/api/offers", async (req, res, next) => {
+    try {
+      const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
+      if (name.length < 2 || name.length > 160) return res.status(400).json({ error: "Некорректное название товара." });
+      const found = await catalogClient.find([{ name, quantity: 1, height: "", age: "", girth: "", container: "" }]);
+      res.json({ offers: offersForName(name, found.products), checkedAt: found.checkedAt, searchComplete: found.complete });
     } catch (error) { next(error); }
     finally { res.locals.release(); }
   });

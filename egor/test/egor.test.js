@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import express from "express";
-import { buildPlan, heightRange, nameMatches, publicOffers } from "../catalog.js";
+import { buildPlan, heightRange, nameMatches, offersForName, publicOffers } from "../catalog.js";
 import { parseText, sanitizeExtraction } from "../schema.js";
 import { recognizePhoto } from "../vision.js";
 import { EgorCatalog } from "../search.js";
@@ -28,8 +28,8 @@ test("current multi-nursery records support nursery-first names and single heigh
   const result = buildPlan([line(25, { height: "110 см", container: "WRB" })], snapshot);
   assert.equal(result.complete, true);
   assert.match(result.rows[0].allocations[0].container, /^WRB/);
-  assert.equal(result.rows[0].allocations[0].height, "100–125 см");
-  assert.equal(result.totalKopecks, 25 * 6000 * 100);
+  assert.equal(result.rows[0].allocations[0].height, "100–120 см");
+  assert.equal(result.totalKopecks, 25 * 3900 * 100);
 });
 test("Smaragd does not become Golden Smaragd, a cone or a cube", () => {
   assert.equal(nameMatches(line(), snapshot.find(p => p.id === "26277")), false);
@@ -71,10 +71,19 @@ test("split supply is possible and only uses available stock", () => {
   assert.equal(result.complete, true); assert.equal(result.supplierCount, 2);
   assert.equal(result.rows[0].allocations.reduce((sum, o) => sum + o.quantity, 0), 150);
 });
-test("unknown stock and unpublished products cannot fill an order", () => {
+test("Shop-Script null stock is unlimited while unpublished products stay hidden", () => {
   const copy = structuredClone(product); copy.skus.forEach(s => s.count = null);
-  assert.equal(buildPlan([line()], [copy]).rows[0].shortage, 25);
+  const result = buildPlan([line()], [copy]);
+  assert.equal(result.rows[0].shortage, 0);
+  assert.equal(result.rows[0].allocations[0].count, null);
   copy.status = "0"; assert.equal(publicOffers(copy).length, 0);
+});
+test("exact product offers return every purchasable variant including unlimited stock", () => {
+  const copy = structuredClone(product); copy.skus.forEach(s => s.count = null);
+  const offers = offersForName("Туя Смарагд", [copy]);
+  assert.equal(offers.length, copy.skus.length);
+  assert.ok(offers.every(offer => offer.count === null));
+  assert.deepEqual(offers.map(offer => offer.priceKopecks), [...offers].map(offer => offer.priceKopecks).sort((a, b) => a - b));
 });
 test("null API stock is not invented; raw private fields are never projected", () => {
   const copy = structuredClone(product); copy.purchase_price = 10; copy.contact_id = "secret";
@@ -250,4 +259,20 @@ test("status prefers a configured Timeweb gateway for photo recognition", async 
   t.after(() => new Promise(resolve => server.close(resolve)));
   const status = await (await fetch(`http://127.0.0.1:${server.address().port}/egor/status`)).json();
   assert.equal(status.photoReady, true); assert.equal(status.photoProvider, "timeweb");
+});
+test("offers endpoint returns exact variants instead of allocation leftovers", async t => {
+  const copy = structuredClone(product); copy.skus.forEach(s => s.count = null);
+  const app = express();
+  app.use("/egor", createEgorRouter({ env: { EGOR_ENABLED: "true" }, catalog: {
+    find: async () => ({ products: [copy], complete: true, checkedAt: "2026-10-31T00:00:00.000Z" }),
+  } }));
+  const server = app.listen(0, "127.0.0.1"); await new Promise(resolve => server.on("listening", resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const response = await fetch(`http://127.0.0.1:${server.address().port}/egor/api/offers`, {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: "Туя Смарагд" }),
+  });
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.offers.length, copy.skus.length);
+  assert.ok(result.offers.every(offer => offer.count === null));
 });

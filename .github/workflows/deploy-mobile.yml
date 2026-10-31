@@ -1,0 +1,67 @@
+name: Deploy OnlyFlora Mobile
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/deploy-mobile.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: onlyflora-mobile-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare static application
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_url="https://onlyflora-mobile.silver-tapir-1656.chatgpt.site"
+          mkdir -p public
+          files=(
+            app.js catalog-index.json index.html manifest.webmanifest offers-snapshot.json styles.css sw.js
+            assets/logo.svg assets/icon-192-v2.png assets/icon-192.png assets/icon-512-v2.png assets/icon-512.png
+            assets/marketplace-hero-autumn.webp assets/product-placeholder.webp
+            assets/category-bird-cherry-v2.webp assets/category-bird-cherry.webp assets/category-conifers.webp
+            assets/category-deciduous.webp assets/category-euonymus.webp assets/category-fruits.webp assets/category-grasses.webp
+            assets/category-hedges.webp assets/category-perennials.webp assets/category-roses.webp assets/category-shrubs.webp
+            assets/category-topiary-v2.webp assets/category-topiary-v3.webp assets/category-topiary.webp
+            assets/sub-apple.webp assets/sub-ash.webp assets/sub-autumn-tree.webp assets/sub-birch.webp assets/sub-cherry.webp
+            assets/sub-elm.webp assets/sub-linden.webp assets/sub-maple-v2.webp assets/sub-maple.webp assets/sub-oak.webp
+            assets/sub-other-deciduous.webp assets/sub-poplar.webp assets/sub-rowan.webp assets/sub-willow.webp
+            assets/categories/barbarisy.webp assets/categories/beresklet.webp assets/categories/boyaryshnik.webp
+            assets/categories/chubushnik.webp assets/categories/drugie-kustarniki.webp assets/categories/dyoren.webp
+            assets/categories/eli.webp assets/categories/gortenziya.webp assets/categories/kalina.webp
+            assets/categories/khvoynye.webp assets/categories/kizilnik.webp assets/categories/kustarniki.webp
+            assets/categories/lapchatka.webp assets/categories/listvennitsa.webp assets/categories/mozhzhevelnik.webp
+            assets/categories/puzyreplodnik.webp assets/categories/siren.webp assets/categories/sosna.webp
+            assets/categories/spireya.webp assets/categories/veygela.webp assets/categories/zhimolost.webp
+          )
+          for file in "${files[@]}"; do
+            mkdir -p "public/$(dirname "$file")"
+            curl --fail --location --retry 4 --retry-delay 3 --user-agent "OnlyFlora-Deploy/1.0" "$source_url/$file" -o "public/$file"
+          done
+          touch public/.nojekyll
+          printf '%s\n' 'app.onlyflora.ru' > public/CNAME
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Upload application
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - name: Publish
+        id: deployment
+        uses: actions/deploy-pages@v4

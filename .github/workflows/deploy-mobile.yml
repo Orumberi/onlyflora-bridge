@@ -52,6 +52,45 @@ jobs:
             mkdir -p "public/$(dirname "$file")"
             curl --fail --location --retry 4 --retry-delay 3 --user-agent "OnlyFlora-Deploy/1.0" "$source_url/$file" -o "public/$file"
           done
+
+          # GitHub Pages is static, while live offers are served by the Timeweb bridge.
+          # Patch the downloaded client and rotate the service-worker cache.
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          app_path = Path("public/app.js")
+          app = app_path.read_text(encoding="utf-8")
+          marker = "const ONLYFLORA_BRIDGE_API"
+          function_needle = "async function jsonRequest(url, options={}){"
+          if marker not in app:
+              if function_needle not in app:
+                  raise SystemExit("jsonRequest insertion point was not found in app.js")
+              bridge = """const ONLYFLORA_BRIDGE_API = 'https://orumberi-onlyflora-bridge-4b6b.twc1.net/egor/api';
+function resolveOnlyFloraApiUrl(url){
+  if(url === '/api/offers') return ONLYFLORA_BRIDGE_API + '/offers';
+  if(url.startsWith('/api/egor/')) return ONLYFLORA_BRIDGE_API + '/' + url.slice('/api/egor/'.length);
+  return url;
+}
+"""
+              app = app.replace(function_needle, bridge + function_needle, 1)
+
+          app, replaced = re.subn(r"fetch\(\s*url\s*,", "fetch(resolveOnlyFloraApiUrl(url),", app, count=1)
+          if replaced != 1 and "fetch(resolveOnlyFloraApiUrl(url)," not in app:
+              raise SystemExit("fetch target was not patched in app.js")
+          app_path.write_text(app, encoding="utf-8")
+
+          index_path = Path("public/index.html")
+          index = index_path.read_text(encoding="utf-8")
+          index = re.sub(r"app\.js\?v=\d+", "app.js?v=29", index)
+          index_path.write_text(index, encoding="utf-8")
+
+          sw_path = Path("public/sw.js")
+          sw = sw_path.read_text(encoding="utf-8")
+          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v37", sw)
+          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=29", sw)
+          sw_path.write_text(sw, encoding="utf-8")
+          PY
           touch public/.nojekyll
           printf '%s\n' 'app.onlyflora.ru' > public/CNAME
       - name: Configure Pages

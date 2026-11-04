@@ -67,12 +67,12 @@ jobs:
               if function_needle not in app:
                   raise SystemExit("jsonRequest insertion point was not found in app.js")
               bridge = """const ONLYFLORA_BRIDGE_API = 'https://orumberi-onlyflora-bridge-4b6b.twc1.net/egor/api';
-function resolveOnlyFloraApiUrl(url){
-  if(url === '/api/offers') return ONLYFLORA_BRIDGE_API + '/offers';
-  if(url.startsWith('/api/egor/')) return ONLYFLORA_BRIDGE_API + '/' + url.slice('/api/egor/'.length);
-  return url;
-}
-"""
+          function resolveOnlyFloraApiUrl(url){
+            if(url === '/api/offers') return ONLYFLORA_BRIDGE_API + '/offers';
+            if(url.startsWith('/api/egor/')) return ONLYFLORA_BRIDGE_API + '/' + url.slice('/api/egor/'.length);
+            return url;
+          }
+          """
               app = app.replace(function_needle, bridge + function_needle, 1)
 
           app, replaced = re.subn(r"fetch\(\s*url\s*,", "fetch(resolveOnlyFloraApiUrl(url),", app, count=1)

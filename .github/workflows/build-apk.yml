@@ -65,15 +65,15 @@ jobs:
         run: |
           rm android-app/app/src/main/res/drawable/onlyflora_icon.xml
           curl --fail --location --retry 3 \
-            https://onlyflora-mobile.silver-tapir-1656.chatgpt.site/assets/icon-512-v2.png \
+            https://app.onlyflora.ru/assets/icon-512-v2.png \
             --output android-app/app/src/main/res/drawable/onlyflora_icon.png
       - name: Build APK
         run: gradle -p android-app :app:assembleDebug --no-daemon --stacktrace
       - name: Name APK
-        run: cp android-app/app/build/outputs/apk/debug/app-debug.apk OnlyFlora-1.1-clean.apk
+        run: cp android-app/app/build/outputs/apk/debug/app-debug.apk OnlyFlora-1.2.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: OnlyFlora-1.1-clean-apk
-          path: OnlyFlora-1.1-clean.apk
+          name: OnlyFlora-1.2-apk
+          path: OnlyFlora-1.2.apk
           if-no-files-found: error
           retention-days: 30

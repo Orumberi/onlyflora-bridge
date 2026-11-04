@@ -18,7 +18,7 @@ import android.webkit.WebViewClient;
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private static final String APP_URL =
-            "https://onlyflora-mobile.silver-tapir-1656.chatgpt.site/?source=apk";
+            "https://app.onlyflora.ru/?source=apk";
 
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " OnlyFloraAndroid/1.1");
+        settings.setUserAgentString(settings.getUserAgentString() + " OnlyFloraAndroid/1.2");
 
         webView.setOnApplyWindowInsetsListener((view, insets) -> {
             view.setPadding(

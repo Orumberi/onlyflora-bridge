@@ -11,7 +11,7 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "test": "node --test",
-    "check": "node --check src/server.js && node --check src/mcp.js && node --check src/oauth.js && node --check src/webasyst.js && node --check src/images.js"
+    "check": "node --check src/server.js && node --check src/mobile-api.js && node --check src/mcp.js && node --check src/oauth.js && node --check src/webasyst.js && node --check src/images.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",

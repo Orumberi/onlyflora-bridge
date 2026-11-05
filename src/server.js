@@ -10,6 +10,7 @@ import {
 
 import { config } from "./config.js";
 import { createOnlyFloraMcpServer } from "./mcp.js";
+import { createMobileApiRouter } from "./mobile-api.js";
 import { OnlyFloraOAuthProvider } from "./oauth.js";
 import { createEgorRouter } from "../egor/router.js";
 
@@ -24,6 +25,7 @@ app.use(
 );
 // Keep Egor's authentication/body limits/error handling ahead of the MCP parser.
 app.use("/egor", createEgorRouter());
+app.use("/mobile/api", createMobileApiRouter());
 app.use(express.json({ limit: "8mb" }));
 
 const baseUrl = new URL(config.appBaseUrl || `http://localhost:${config.port}`);

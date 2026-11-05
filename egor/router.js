@@ -21,6 +21,17 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
   let busy = false;
   const publicDir = fileURLToPath(new URL("./public/", import.meta.url));
   router.use((_req, res, next) => {
+    if (_req.get("origin") === "https://app.onlyflora.ru") {
+      res.set({
+        "Access-Control-Allow-Origin": "https://app.onlyflora.ru",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Max-Age": "86400",
+        "Cross-Origin-Resource-Policy": "cross-origin",
+        Vary: "Origin",
+      });
+      if (_req.method === "OPTIONS") return res.sendStatus(204);
+    }
     res.set({ "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow", "Referrer-Policy": "no-referrer",
       "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors https://onlyflora.ru https://onlyflora.webasyst.cloud; object-src 'none'; base-uri 'none'" });
     if (["/widget.js", "/theme.js", "/theme.css"].includes(_req.path) || _req.path.startsWith("/assets/")) {
@@ -29,22 +40,6 @@ export function createEgorRouter({ env = process.env, catalog, recognize = recog
     }
     // The assistant is framed by Only Test; CSP restricts the permitted parents.
     res.removeHeader("X-Frame-Options"); next();
-  });
-  const apiOrigins = new Set([
-    "https://app.onlyflora.ru",
-    "https://onlyflora-mobile.silver-tapir-1656.chatgpt.site"
-  ]);
-  router.use("/api", (req, res, next) => {
-    const origin = req.get("origin");
-    if (origin && apiOrigins.has(origin)) {
-      res.set("Access-Control-Allow-Origin", origin);
-      res.vary("Origin");
-      res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-      res.set("Access-Control-Allow-Headers", "content-type");
-      res.set("Cross-Origin-Resource-Policy", "cross-origin");
-    }
-    if (req.method === "OPTIONS") return res.sendStatus(204);
-    next();
   });
   router.get("/status", (_req, res) => res.json({ ready, textReady: true, photoReady: ready && photoReady, photoProvider, preview: true }));
   router.use("/api", rateLimit({ windowMs: 60000, limit: 10, standardHeaders: true, legacyHeaders: false,

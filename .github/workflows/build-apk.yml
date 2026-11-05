@@ -2,7 +2,7 @@ name: Build OnlyFlora Android release
 
 on:
   push:
-    branches: [android-store-v1]
+    branches: [main]
     paths:
       - "android-app/**"
       - ".github/workflows/build-apk.yml"
@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -88,8 +89,7 @@ jobs:
           retention-days: 30
 
       - name: Restore OnlyFlora release key
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        if: ${{ env.ANDROID_KEYSTORE_BASE64 != '' && env.ANDROID_KEYSTORE_PASSWORD != '' && env.ANDROID_KEY_ALIAS != '' && env.ANDROID_KEY_PASSWORD != '' }}
         run: |
           test -n "$ANDROID_KEYSTORE_BASE64"
           test -n "$ANDROID_KEYSTORE_PASSWORD"
@@ -99,6 +99,7 @@ jobs:
           echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/onlyflora-release.jks" >> "$GITHUB_ENV"
 
       - name: Build signed APK and AAB
+        if: ${{ env.ANDROID_KEYSTORE_PATH != '' }}
         run: |
           gradle -p android-app \
             :app:assembleRelease :app:bundleRelease \
@@ -106,6 +107,7 @@ jobs:
             --no-daemon --stacktrace
 
       - name: Collect release files
+        if: ${{ env.ANDROID_KEYSTORE_PATH != '' }}
         run: |
           mkdir -p release
           cp android-app/app/build/outputs/apk/release/app-release.apk \
@@ -115,6 +117,7 @@ jobs:
           sha256sum release/* > release/SHA256SUMS.txt
 
       - uses: actions/upload-artifact@v4
+        if: ${{ env.ANDROID_KEYSTORE_PATH != '' }}
         with:
           name: OnlyFlora-1.0.0-store-release
           path: release/

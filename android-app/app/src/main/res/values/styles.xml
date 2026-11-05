@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.OnlyFlora" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/onlyflora_green</item>
+        <item name="android:navigationBarColor">@color/onlyflora_green</item>
+        <item name="android:windowBackground">@color/onlyflora_background</item>
+        <item name="android:colorAccent">@color/onlyflora_green</item>
+    </style>
+</resources>

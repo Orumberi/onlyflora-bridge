@@ -106,9 +106,9 @@ jobs:
           sw = sw_path.read_text(encoding="utf-8")
           sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v38", sw)
           sw = re.sub(r"app\.js\?v=\d+", "app.js?v=30", sw)
-          network_only = "if(new URL(event.request.url).origin!==self.location.origin){event.respondWith(fetch(event.request));return}\\n  "
+          network_only = "if(new URL(event.request.url).origin!==self.location.origin){event.respondWith(fetch(event.request));return}\n  "
           if network_only not in sw:
-              sw = sw.replace("if(event.request.method!=='GET')return;\\n  ", "if(event.request.method!=='GET')return;\\n  " + network_only, 1)
+              sw = sw.replace("if(event.request.method!=='GET')return;\n  ", "if(event.request.method!=='GET')return;\n  " + network_only, 1)
           sw_path.write_text(sw, encoding="utf-8")
           PY
           touch public/.nojekyll

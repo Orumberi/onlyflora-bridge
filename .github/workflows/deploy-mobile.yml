@@ -27,7 +27,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          source_url="https://onlyflora-mobile.silver-tapir-1656.chatgpt.site"
+          source_url="https://app.onlyflora.ru"
           mkdir -p public
           files=(
             app.js catalog-index.json index.html manifest.webmanifest offers-snapshot.json styles.css sw.js
@@ -61,34 +61,54 @@ jobs:
 
           app_path = Path("public/app.js")
           app = app_path.read_text(encoding="utf-8")
-          marker = "const ONLYFLORA_BRIDGE_API"
           function_needle = "async function jsonRequest(url, options={}){"
-          if marker not in app:
-              if function_needle not in app:
-                  raise SystemExit("jsonRequest insertion point was not found in app.js")
-              bridge = """const ONLYFLORA_BRIDGE_API = 'https://orumberi-onlyflora-bridge-4b6b.twc1.net/egor/api';
+          if function_needle not in app:
+              raise SystemExit("jsonRequest insertion point was not found in app.js")
+
+          # Remove an older injected resolver before adding the canonical one.
+          app = re.sub(
+              r"const ONLYFLORA_BRIDGE_API = .*?\nfunction resolveOnlyFloraApiUrl\(url\)\{.*?\n\}\n",
+              "",
+              app,
+              count=1,
+              flags=re.S,
+          )
+          bridge = """const ONLYFLORA_API_ORIGIN = 'https://orumberi-onlyflora-bridge-4b6b.twc1.net';
           function resolveOnlyFloraApiUrl(url){
-            if(url === '/api/offers') return ONLYFLORA_BRIDGE_API + '/offers';
-            if(url.startsWith('/api/egor/')) return ONLYFLORA_BRIDGE_API + '/' + url.slice('/api/egor/'.length);
+            if(url.startsWith('/api/egor/')) return ONLYFLORA_API_ORIGIN + '/egor/api/' + url.slice('/api/egor/'.length);
+            if(url.startsWith('/api/')) return ONLYFLORA_API_ORIGIN + '/mobile/api/' + url.slice('/api/'.length);
             return url;
           }
           """
-              app = app.replace(function_needle, bridge + function_needle, 1)
+          app = app.replace(function_needle, bridge + function_needle, 1)
 
-          app, replaced = re.subn(r"fetch\(\s*url\s*,", "fetch(resolveOnlyFloraApiUrl(url),", app, count=1)
-          if replaced != 1 and "fetch(resolveOnlyFloraApiUrl(url)," not in app:
-              raise SystemExit("fetch target was not patched in app.js")
+          # Re-patch jsonRequest idempotently.
+          app = app.replace("fetch(resolveOnlyFloraApiUrl(url),", "fetch(url,", 1)
+          app = app.replace("fetch(url,", "fetch(resolveOnlyFloraApiUrl(url),", 1)
+
+          catalog_calls = {
+              "fetch(`/api/catalog?query=${encodeURIComponent(used)}`,": "fetch(resolveOnlyFloraApiUrl(`/api/catalog?query=${encodeURIComponent(used)}`),",
+              "fetch(`/api/catalog?query=${encodeURIComponent(raw)}`,": "fetch(resolveOnlyFloraApiUrl(`/api/catalog?query=${encodeURIComponent(raw)}`),",
+          }
+          for old, new in catalog_calls.items():
+              app = app.replace(old, new)
+
+          if "/mobile/api/" not in app:
+              raise SystemExit("mobile API resolver was not added to app.js")
           app_path.write_text(app, encoding="utf-8")
 
           index_path = Path("public/index.html")
           index = index_path.read_text(encoding="utf-8")
-          index = re.sub(r"app\.js\?v=\d+", "app.js?v=29", index)
+          index = re.sub(r"app\.js\?v=\d+", "app.js?v=30", index)
           index_path.write_text(index, encoding="utf-8")
 
           sw_path = Path("public/sw.js")
           sw = sw_path.read_text(encoding="utf-8")
-          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v37", sw)
-          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=29", sw)
+          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v38", sw)
+          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=30", sw)
+          network_only = "if(new URL(event.request.url).origin!==self.location.origin){event.respondWith(fetch(event.request));return}\n  "
+          if network_only not in sw:
+              sw = sw.replace("if(event.request.method!=='GET')return;\n  ", "if(event.request.method!=='GET')return;\n  " + network_only, 1)
           sw_path.write_text(sw, encoding="utf-8")
           PY
           touch public/.nojekyll

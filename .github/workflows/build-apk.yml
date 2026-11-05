@@ -50,6 +50,43 @@ jobs:
         with:
           gradle-version: "8.11.1"
 
+      - name: Restore stable test signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: onlyflora-android-debug-keystore-v1
+
+      - name: Prepare stable test signing key
+        run: |
+          mkdir -p "$HOME/.android"
+          if [ ! -f "$HOME/.android/debug.keystore" ]; then
+            keytool -genkeypair -v \
+              -keystore "$HOME/.android/debug.keystore" \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=OnlyFlora Test,O=OnlyFlora,C=RU"
+          fi
+
+      - name: Build installable test APK
+        run: |
+          gradle -p android-app :app:assembleDebug \
+            -PONLYFLORA_APP_URL="https://app.onlyflora.ru/?source=android" \
+            --no-daemon --stacktrace
+          mkdir -p test-release
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk \
+            test-release/OnlyFlora-1.0.0-test.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OnlyFlora-1.0.0-test-apk
+          path: test-release/
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Restore OnlyFlora release key
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}

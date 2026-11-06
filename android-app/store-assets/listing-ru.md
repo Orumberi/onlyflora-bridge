@@ -30,5 +30,6 @@ OnlyFlora помогает подобрать растения и увидеть
 
 - Поддержка: `agro@onlyflora.ru`
 - Сайт: `https://onlyflora.ru/`
-- Политика конфиденциальности: `https://onlyflora.ru/about/privacy-policy/`
-- Правила торговой площадки: `https://onlyflora.ru/site/marketplace-rules/`
+- Политика конфиденциальности: `https://app.onlyflora.ru/privacy/`
+- Удаление аккаунта и данных: `https://app.onlyflora.ru/account-deletion/`
+- Правила торговой площадки: `https://app.onlyflora.ru/marketplace-rules/`

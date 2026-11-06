@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/deploy-mobile.yml"
+      - "mobile-static/**"
 
 permissions:
   contents: read
@@ -23,6 +24,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Prepare static application
         shell: bash
         run: |
@@ -100,6 +104,26 @@ jobs:
           index_path = Path("public/index.html")
           index = index_path.read_text(encoding="utf-8")
           index = re.sub(r"app\.js\?v=\d+", "app.js?v=30", index)
+          index = index.replace(
+              "https://onlyflora.ru/about/privacy-policy/",
+              "https://app.onlyflora.ru/privacy/",
+          )
+          index = index.replace(
+              "https://onlyflora.ru/site/marketplace-rules/",
+              "https://app.onlyflora.ru/marketplace-rules/",
+          )
+          if "https://app.onlyflora.ru/account-deletion/" not in index:
+              index = re.sub(
+                  r'(</a>\s*</nav>)',
+                  r'</a>\n                <a href="https://app.onlyflora.ru/account-deletion/" target="_blank" rel="noopener">Удаление аккаунта и данных <i>↗</i></a>\n              </nav>',
+                  index,
+              )
+          if "Фото и файлы передаются только для распознавания" not in index:
+              index = index.replace(
+                  '<div class="assistant-note"><b>Важно:</b> возраст, высота, контейнер и обхват сохраняются раздельно. Замены показываются отдельно.</div>',
+                  '<div class="assistant-note"><b>Важно:</b> возраст, высота, контейнер и обхват сохраняются раздельно. Замены показываются отдельно.</div>\n'
+                  '          <div class="assistant-note">Фото и файлы передаются только для распознавания списка растений. Не загружайте документы с персональными данными. <a href="https://app.onlyflora.ru/privacy/" target="_blank" rel="noopener">Подробнее о защите данных</a>.</div>',
+              )
           index_path.write_text(index, encoding="utf-8")
 
           sw_path = Path("public/sw.js")
@@ -109,8 +133,12 @@ jobs:
           network_only = "if(new URL(event.request.url).origin!==self.location.origin){event.respondWith(fetch(event.request));return}\n  "
           if network_only not in sw:
               sw = sw.replace("if(event.request.method!=='GET')return;\n  ", "if(event.request.method!=='GET')return;\n  " + network_only, 1)
+          legal_network_only = "if(['/privacy/','/account-deletion/','/marketplace-rules/'].includes(new URL(event.request.url).pathname)){event.respondWith(fetch(event.request));return}\n  "
+          if legal_network_only not in sw:
+              sw = sw.replace(network_only, network_only + legal_network_only, 1)
           sw_path.write_text(sw, encoding="utf-8")
           PY
+          cp -R mobile-static/. public/
           touch public/.nojekyll
           printf '%s\n' 'app.onlyflora.ru' > public/CNAME
       - name: Configure Pages

@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - "android-app/**"
+      - "!android-app/store-assets/**"
+      - "!android-app/STORE_RELEASE.md"
+      - "!android-app/README.md"
       - ".github/workflows/build-apk.yml"
   workflow_dispatch:
 

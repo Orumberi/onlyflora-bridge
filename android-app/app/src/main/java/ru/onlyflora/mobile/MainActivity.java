@@ -49,16 +49,6 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
 
-        root.setOnApplyWindowInsetsListener((view, insets) -> {
-            view.setPadding(
-                    0,
-                    insets.getSystemWindowInsetTop(),
-                    0,
-                    insets.getSystemWindowInsetBottom());
-            return insets;
-        });
-        root.requestApplyInsets();
-
         if (savedInstanceState == null) {
             loadApplication();
         } else {

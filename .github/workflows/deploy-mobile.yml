@@ -156,7 +156,7 @@ jobs:
           PY
           node --check public/app.js
           cp -R mobile-static/. public/
-          # Publish the latest Android build at a stable, user-friendly URL.
+          # Publish Android 1.0.2 at the stable, user-friendly URL.
           mkdir -p public/downloads
           cp downloads/OnlyFlora.apk public/downloads/OnlyFlora.apk
           touch public/.nojekyll

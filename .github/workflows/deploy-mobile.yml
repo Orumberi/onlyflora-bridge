@@ -140,6 +140,7 @@ jobs:
           sw_path.write_text(sw, encoding="utf-8")
           PY
           cp -R mobile-static/. public/
+          # Publish the latest Android build at a stable, user-friendly URL.
           mkdir -p public/downloads
           cp downloads/OnlyFlora.apk public/downloads/OnlyFlora.apk
           touch public/.nojekyll

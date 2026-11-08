@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/deploy-mobile.yml"
       - "mobile-static/**"
+      - "downloads/**"
 
 permissions:
   contents: read
@@ -139,6 +140,8 @@ jobs:
           sw_path.write_text(sw, encoding="utf-8")
           PY
           cp -R mobile-static/. public/
+          mkdir -p public/downloads
+          cp downloads/OnlyFlora-1.0.0-test.apk public/downloads/OnlyFlora.apk
           touch public/.nojekyll
           printf '%s\n' 'app.onlyflora.ru' > public/CNAME
       - name: Configure Pages

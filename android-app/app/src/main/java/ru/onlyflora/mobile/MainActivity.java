@@ -27,10 +27,12 @@ import android.widget.TextView;
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private static final String APP_HOST = "app.onlyflora.ru";
+    private static final String WEB_RESET_KEY = "web-profile-reset-1.0.2";
 
     private WebView webView;
     private View errorView;
     private ValueCallback<Uri[]> filePathCallback;
+    private boolean resetLegacyWebProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +51,12 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
 
+        resetLegacyWebProfile = !getPreferences(MODE_PRIVATE)
+                .getBoolean(WEB_RESET_KEY, false);
+        if (resetLegacyWebProfile) {
+            webView.clearCache(true);
+        }
+
         if (savedInstanceState == null) {
             loadApplication();
         } else {
@@ -65,6 +73,7 @@ public class MainActivity extends Activity {
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
+        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
@@ -93,6 +102,35 @@ public class MainActivity extends Activity {
                 if (isInternalUrl(Uri.parse(url))) {
                     showWebView();
                 }
+            }
+
+            @Override
+            public void onPageFinished(WebView currentView, String url) {
+                if (!isInternalUrl(Uri.parse(url))) {
+                    return;
+                }
+
+                currentView.evaluateJavascript(
+                        "document.documentElement.classList.add('onlyflora-android');",
+                        null);
+
+                if (!resetLegacyWebProfile) {
+                    return;
+                }
+                resetLegacyWebProfile = false;
+                getPreferences(MODE_PRIVATE).edit()
+                        .putBoolean(WEB_RESET_KEY, true)
+                        .apply();
+                currentView.evaluateJavascript(
+                        "(async()=>{" +
+                                "try{if('serviceWorker'in navigator){" +
+                                "const r=await navigator.serviceWorker.getRegistrations();" +
+                                "await Promise.all(r.map(x=>x.unregister()));}}catch(e){}" +
+                                "try{if('caches'in window){const k=await caches.keys();" +
+                                "await Promise.all(k.map(x=>caches.delete(x)));}}catch(e){}" +
+                                "location.replace('https://app.onlyflora.ru/?source=android&v=10002');" +
+                                "})()",
+                        null);
             }
 
             @Override

@@ -70,12 +70,13 @@ jobs:
           if function_needle not in app:
               raise SystemExit("jsonRequest insertion point was not found in app.js")
 
-          # Remove an older injected resolver before adding the canonical one.
+          # Remove every resolver injected by older deployments before adding
+          # exactly one canonical block. The source is the previously deployed
+          # application, so this cleanup must remain idempotent.
           app = re.sub(
-              r"const ONLYFLORA_BRIDGE_API = .*?\nfunction resolveOnlyFloraApiUrl\(url\)\{.*?\n\}\n",
+              r"const ONLYFLORA_(?:BRIDGE_API|API_ORIGIN) = .*?\nfunction resolveOnlyFloraApiUrl\(url\)\{.*?\n\}\n",
               "",
               app,
-              count=1,
               flags=re.S,
           )
           bridge = """const ONLYFLORA_API_ORIGIN = 'https://orumberi-onlyflora-bridge-4b6b.twc1.net';
@@ -86,6 +87,10 @@ jobs:
           }
           """
           app = app.replace(function_needle, bridge + function_needle, 1)
+
+          android_class = "if(/OnlyFloraAndroid\\//.test(navigator.userAgent))document.documentElement.classList.add('onlyflora-android');\n"
+          app = app.replace(android_class, "")
+          app = android_class + app
 
           # Re-patch jsonRequest idempotently.
           app = app.replace("fetch(resolveOnlyFloraApiUrl(url),", "fetch(url,", 1)
@@ -100,11 +105,20 @@ jobs:
 
           if "/mobile/api/" not in app:
               raise SystemExit("mobile API resolver was not added to app.js")
+          if app.count("const ONLYFLORA_API_ORIGIN =") != 1:
+              raise SystemExit("mobile API resolver must occur exactly once")
           app_path.write_text(app, encoding="utf-8")
+
+          styles_path = Path("public/styles.css")
+          styles = styles_path.read_text(encoding="utf-8")
+          android_rule = ".onlyflora-android .app-shell{padding-top:0!important}"
+          styles = styles.replace(android_rule, "") + "\n" + android_rule + "\n"
+          styles_path.write_text(styles, encoding="utf-8")
 
           index_path = Path("public/index.html")
           index = index_path.read_text(encoding="utf-8")
-          index = re.sub(r"app\.js\?v=\d+", "app.js?v=30", index)
+          index = re.sub(r"app\.js\?v=\d+", "app.js?v=31", index)
+          index = re.sub(r"styles\.css\?v=\d+", "styles.css?v=16", index)
           index = index.replace(
               "https://onlyflora.ru/about/privacy-policy/",
               "https://app.onlyflora.ru/privacy/",
@@ -129,8 +143,9 @@ jobs:
 
           sw_path = Path("public/sw.js")
           sw = sw_path.read_text(encoding="utf-8")
-          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v38", sw)
-          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=30", sw)
+          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v39", sw)
+          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=31", sw)
+          sw = re.sub(r"styles\.css\?v=\d+", "styles.css?v=16", sw)
           network_only = "if(new URL(event.request.url).origin!==self.location.origin){event.respondWith(fetch(event.request));return}\n  "
           if network_only not in sw:
               sw = sw.replace("if(event.request.method!=='GET')return;\n  ", "if(event.request.method!=='GET')return;\n  " + network_only, 1)
@@ -139,6 +154,7 @@ jobs:
               sw = sw.replace(network_only, network_only + legal_network_only, 1)
           sw_path.write_text(sw, encoding="utf-8")
           PY
+          node --check public/app.js
           cp -R mobile-static/. public/
           # Publish the latest Android build at a stable, user-friendly URL.
           mkdir -p public/downloads

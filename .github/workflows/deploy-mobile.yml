@@ -167,8 +167,8 @@ jobs:
           # Android WebView receives fresh application code directly and does
           # not install the browser PWA service worker into its private cache.
           app = re.sub(
-              r"if\('serviceWorker'in navigator(?:&&[^)]*)?\)navigator\.serviceWorker\.register\('/sw\.js\?v=\d+'\);",
-              "if('serviceWorker'in navigator&&!/OnlyFloraAndroid\\//.test(navigator.userAgent))navigator.serviceWorker.register('/sw.js?v=41');",
+              r"navigator\.serviceWorker\.register\('/sw\.js\?v=\d+'\)",
+              "navigator.serviceWorker.register('/sw.js?v=41')",
               app,
           )
 

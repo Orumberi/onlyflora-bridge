@@ -168,7 +168,7 @@ jobs:
           # not install the browser PWA service worker into its private cache.
           app = re.sub(
               r"navigator\.serviceWorker\.register\('/sw\.js\?v=\d+'\)",
-              "navigator.serviceWorker.register('/sw.js?v=41')",
+              "navigator.serviceWorker.register('/sw.js?v=42')",
               app,
           )
 
@@ -180,7 +180,7 @@ jobs:
 
           styles_path = Path("public/styles.css")
           styles = styles_path.read_text(encoding="utf-8")
-          android_rule = ".onlyflora-android .app-shell{padding-top:40px!important}.onlyflora-android .app-header{top:40px}"
+          android_rule = ".onlyflora-android .app-shell{padding-top:0!important}"
           product_scroll_rule = ".product-view{padding-bottom:220px!important;scroll-padding-bottom:190px}"
           styles = re.sub(
               r"\.onlyflora-android \.app-shell\{padding-top:[^}]+\}(?:\.onlyflora-android \.app-header\{top:[^}]+\})?",
@@ -193,7 +193,7 @@ jobs:
           index_path = Path("public/index.html")
           index = index_path.read_text(encoding="utf-8")
           index = re.sub(r"app\.js\?v=\d+", "app.js?v=32", index)
-          index = re.sub(r"styles\.css\?v=\d+", "styles.css?v=18", index)
+          index = re.sub(r"styles\.css\?v=\d+", "styles.css?v=19", index)
           index = index.replace(
               "https://onlyflora.ru/about/privacy-policy/",
               "https://app.onlyflora.ru/privacy/",
@@ -218,9 +218,9 @@ jobs:
 
           sw_path = Path("public/sw.js")
           sw = sw_path.read_text(encoding="utf-8")
-          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v41", sw)
+          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v42", sw)
           sw = re.sub(r"app\.js\?v=\d+", "app.js?v=32", sw)
-          sw = re.sub(r"styles\.css\?v=\d+", "styles.css?v=18", sw)
+          sw = re.sub(r"styles\.css\?v=\d+", "styles.css?v=19", sw)
           network_only = "if(new URL(event.request.url).origin!==self.location.origin){event.respondWith(fetch(event.request));return}\n  "
           if network_only not in sw:
               sw = sw.replace("if(event.request.method!=='GET')return;\n  ", "if(event.request.method!=='GET')return;\n  " + network_only, 1)

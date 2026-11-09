@@ -70,6 +70,7 @@ jobs:
             -alias androiddebugkey \
             | sha256sum \
             | awk '{print $1}')"
+          echo "Restored signing certificate SHA-256: $fingerprint"
           test "$fingerprint" = "b74fe54f845a7e4c2e81d4886dc2fc78033b02b055fd1515c056cd797810c549"
 
       - name: Build installable test APK

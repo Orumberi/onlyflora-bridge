@@ -64,13 +64,12 @@ jobs:
       - name: Verify stable test signing key
         run: |
           test -f "$HOME/.android/debug.keystore"
-          fingerprint="$(keytool -list -v \
+          fingerprint="$(keytool -exportcert \
             -keystore "$HOME/.android/debug.keystore" \
             -storepass android \
             -alias androiddebugkey \
-            | sed -n 's/^[[:space:]]*SHA256: //p' \
-            | tr -d ':' \
-            | tr '[:upper:]' '[:lower:]')"
+            | sha256sum \
+            | awk '{print $1}')"
           test "$fingerprint" = "b74fe54f845a7e4c2e81d4886dc2fc78033b02b055fd1515c056cd797810c549"
 
       - name: Build installable test APK

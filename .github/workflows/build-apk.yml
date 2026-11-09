@@ -77,22 +77,22 @@ jobs:
         run: |
           mkdir -p release
           cp android-app/app/build/outputs/apk/release/app-release.apk \
-            release/OnlyFlora-1.0.3.apk
+            release/OnlyFlora-1.0.4.apk
           cp android-app/app/build/outputs/bundle/release/app-release.aab \
-            release/OnlyFlora-1.0.3.aab
+            release/OnlyFlora-1.0.4.aab
           sha256sum release/* > release/SHA256SUMS.txt
 
       - name: Verify production APK signing certificate
         run: |
           fingerprint="$("$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" \
-            verify --print-certs release/OnlyFlora-1.0.3.apk \
+            verify --print-certs release/OnlyFlora-1.0.4.apk \
             | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')"
           echo "Production signing certificate SHA-256: $fingerprint"
           test "$fingerprint" = "ff10f2c63fa74f958cafcdd9cfcbcc79c3de14a816b93abdba88d1e3df58159b"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: OnlyFlora-1.0.3-store-release
+          name: OnlyFlora-1.0.4-store-release
           path: release/
           if-no-files-found: error
           retention-days: 90
@@ -101,12 +101,12 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           mkdir -p downloads
-          cp release/OnlyFlora-1.0.3.apk downloads/OnlyFlora.apk
+          cp release/OnlyFlora-1.0.4.apk downloads/OnlyFlora.apk
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add downloads/OnlyFlora.apk
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "build(android): publish OnlyFlora 1.0.3 production APK"
+          git commit -m "build(android): publish OnlyFlora 1.0.4 production APK"
           git push

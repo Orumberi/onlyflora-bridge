@@ -6,9 +6,11 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowInsets;
 import android.webkit.CookieManager;
 import android.webkit.SafeBrowsingResponse;
 import android.webkit.ValueCallback;
@@ -27,7 +29,7 @@ import android.widget.TextView;
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private static final String APP_HOST = "app.onlyflora.ru";
-    private static final String WEB_RESET_KEY = "web-profile-reset-1.0.3";
+    private static final String WEB_RESET_KEY = "web-profile-reset-1.0.4";
 
     private WebView webView;
     private View errorView;
@@ -39,8 +41,12 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         getWindow().setStatusBarColor(Color.rgb(0, 126, 63));
         getWindow().setNavigationBarColor(Color.rgb(0, 126, 63));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            getWindow().setDecorFitsSystemWindows(false);
+        }
 
         FrameLayout root = new FrameLayout(this);
+        applySystemBarInsets(root);
         webView = createWebView();
         errorView = createErrorView();
         root.addView(webView, new FrameLayout.LayoutParams(
@@ -50,6 +56,7 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        root.requestApplyInsets();
 
         resetLegacyWebProfile = !getPreferences(MODE_PRIVATE)
                 .getBoolean(WEB_RESET_KEY, false);
@@ -128,7 +135,7 @@ public class MainActivity extends Activity {
                                 "await Promise.all(r.map(x=>x.unregister()));}}catch(e){}" +
                                 "try{if('caches'in window){const k=await caches.keys();" +
                                 "await Promise.all(k.map(x=>caches.delete(x)));}}catch(e){}" +
-                                "location.replace('https://app.onlyflora.ru/?source=android&v=10003');" +
+                                "location.replace('https://app.onlyflora.ru/?source=android&v=10004');" +
                                 "})()",
                         null);
             }
@@ -187,6 +194,19 @@ public class MainActivity extends Activity {
         });
 
         return view;
+    }
+
+    private void applySystemBarInsets(View root) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            root.setFitsSystemWindows(true);
+            return;
+        }
+        root.setOnApplyWindowInsetsListener((view, insets) -> {
+            android.graphics.Insets safeArea = insets.getInsets(
+                    WindowInsets.Type.statusBars() | WindowInsets.Type.displayCutout());
+            view.setPadding(0, safeArea.top, 0, 0);
+            return insets;
+        });
     }
 
     private View createErrorView() {

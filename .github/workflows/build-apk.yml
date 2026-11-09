@@ -59,21 +59,19 @@ jobs:
         with:
           path: ~/.android/debug.keystore
           key: onlyflora-android-debug-keystore-v1
+          fail-on-cache-miss: true
 
-      - name: Prepare stable test signing key
+      - name: Verify stable test signing key
         run: |
-          mkdir -p "$HOME/.android"
-          if [ ! -f "$HOME/.android/debug.keystore" ]; then
-            keytool -genkeypair -v \
-              -keystore "$HOME/.android/debug.keystore" \
-              -storepass android \
-              -alias androiddebugkey \
-              -keypass android \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000 \
-              -dname "CN=OnlyFlora Test,O=OnlyFlora,C=RU"
-          fi
+          test -f "$HOME/.android/debug.keystore"
+          fingerprint="$(keytool -list -v \
+            -keystore "$HOME/.android/debug.keystore" \
+            -storepass android \
+            -alias androiddebugkey \
+            | sed -n 's/^[[:space:]]*SHA256: //p' \
+            | tr -d ':' \
+            | tr '[:upper:]' '[:lower:]')"
+          test "$fingerprint" = "b74fe54f845a7e4c2e81d4886dc2fc78033b02b055fd1515c056cd797810c549"
 
       - name: Build installable test APK
         run: |
@@ -83,6 +81,13 @@ jobs:
           mkdir -p test-release
           cp android-app/app/build/outputs/apk/debug/app-debug.apk \
             test-release/OnlyFlora-1.0.2-test.apk
+
+      - name: Verify APK signing certificate
+        run: |
+          fingerprint="$("$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" \
+            verify --print-certs test-release/OnlyFlora-1.0.2-test.apk \
+            | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')"
+          test "$fingerprint" = "b74fe54f845a7e4c2e81d4886dc2fc78033b02b055fd1515c056cd797810c549"
 
       - uses: actions/upload-artifact@v4
         with:

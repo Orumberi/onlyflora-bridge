@@ -103,6 +103,75 @@ jobs:
           for old, new in catalog_calls.items():
               app = app.replace(old, new)
 
+          # Collapse duplicate Shop-Script product cards into one plant card.
+          # The underlying master products remain available as variants so the
+          # product screen can collect every price, size and nursery offer.
+          app = re.sub(
+              r"/\* ONLYFLORA_GROUPING_START \*/.*?/\* ONLYFLORA_GROUPING_END \*/\n",
+              "",
+              app,
+              flags=re.S,
+          )
+          grouping = r'''/* ONLYFLORA_GROUPING_START */
+          function productGroupKey(product){
+            return normalize(product?.name).replace(/[«»"'`´]/g,'').replace(/\s+/g,' ').trim();
+          }
+          function productNumericPrice(product){
+            const direct=Number(product?.price||0);
+            if(direct>0)return direct;
+            const digits=String(product?.priceText||'').replace(/[^0-9]+/g,'');
+            return Number(digits||0);
+          }
+          function groupCatalogProducts(products){
+            const groups=new Map();
+            for(const source of products||[]){
+              const key=productGroupKey(source)||String(source?.id||source?.url||Math.random());
+              const incoming=Array.isArray(source?.variants)&&source.variants.length?source.variants:[source];
+              if(!groups.has(key))groups.set(key,{...source,variants:[]});
+              const group=groups.get(key);
+              group.variants.push(...incoming);
+              const currentPrice=productNumericPrice(group);
+              const incomingPrice=productNumericPrice(source);
+              if(incomingPrice>0&&(!currentPrice||incomingPrice<currentPrice)){
+                const variants=group.variants;
+                Object.assign(group,source,{variants});
+              }
+            }
+            return [...groups.values()].map(group=>{
+              const seen=new Set();
+              group.variants=group.variants.filter(item=>{
+                const key=String(item?.id||item?.url||item?.name);
+                if(seen.has(key))return false;
+                seen.add(key);return true;
+              });
+              const price=productNumericPrice(group);
+              if(price>0){group.price=price;group.priceText=`от ${money(price)}`;}
+              if(group.variants.length>1)group.meta=`${group.variants.length} вариантов · цены и размеры внутри`;
+              return group;
+            });
+          }
+          /* ONLYFLORA_GROUPING_END */
+          '''
+          render_needle = "function renderProductList(products,{status='Живой каталог',total=products.length}={}){\n"
+          if render_needle not in app:
+              raise SystemExit("product list renderer was not found in app.js")
+          app = app.replace("  products = groupCatalogProducts(products);\n", "")
+          app = app.replace(render_needle, grouping + render_needle + "  products = groupCatalogProducts(products);\n", 1)
+
+          old_snapshot = "const offers=offersFromSnapshot(snapshot,product,names[0]);"
+          new_snapshot = "const variants=Array.isArray(product.variants)&&product.variants.length?product.variants:[product];\n      const offers=variants.flatMap(variant=>offersFromSnapshot(snapshot,variant,names[0]));"
+          app = app.replace(old_snapshot, new_snapshot)
+          if new_snapshot not in app:
+              raise SystemExit("grouped product offer lookup was not added to app.js")
+
+          # Android WebView receives fresh application code directly and does
+          # not install the browser PWA service worker into its private cache.
+          app = re.sub(
+              r"if\('serviceWorker'in navigator(?:&&[^)]*)?\)navigator\.serviceWorker\.register\('/sw\.js\?v=\d+'\);",
+              "if('serviceWorker'in navigator&&!/OnlyFloraAndroid\\//.test(navigator.userAgent))navigator.serviceWorker.register('/sw.js?v=40');",
+              app,
+          )
+
           if "/mobile/api/" not in app:
               raise SystemExit("mobile API resolver was not added to app.js")
           if app.count("const ONLYFLORA_API_ORIGIN =") != 1:
@@ -112,13 +181,15 @@ jobs:
           styles_path = Path("public/styles.css")
           styles = styles_path.read_text(encoding="utf-8")
           android_rule = ".onlyflora-android .app-shell{padding-top:0!important}"
-          styles = styles.replace(android_rule, "") + "\n" + android_rule + "\n"
+          product_scroll_rule = ".product-view{padding-bottom:220px!important;scroll-padding-bottom:190px}"
+          styles = styles.replace(android_rule, "").replace(product_scroll_rule, "")
+          styles += "\n" + android_rule + "\n" + product_scroll_rule + "\n"
           styles_path.write_text(styles, encoding="utf-8")
 
           index_path = Path("public/index.html")
           index = index_path.read_text(encoding="utf-8")
-          index = re.sub(r"app\.js\?v=\d+", "app.js?v=31", index)
-          index = re.sub(r"styles\.css\?v=\d+", "styles.css?v=16", index)
+          index = re.sub(r"app\.js\?v=\d+", "app.js?v=32", index)
+          index = re.sub(r"styles\.css\?v=\d+", "styles.css?v=17", index)
           index = index.replace(
               "https://onlyflora.ru/about/privacy-policy/",
               "https://app.onlyflora.ru/privacy/",
@@ -143,9 +214,9 @@ jobs:
 
           sw_path = Path("public/sw.js")
           sw = sw_path.read_text(encoding="utf-8")
-          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v39", sw)
-          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=31", sw)
-          sw = re.sub(r"styles\.css\?v=\d+", "styles.css?v=16", sw)
+          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v40", sw)
+          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=32", sw)
+          sw = re.sub(r"styles\.css\?v=\d+", "styles.css?v=17", sw)
           network_only = "if(new URL(event.request.url).origin!==self.location.origin){event.respondWith(fetch(event.request));return}\n  "
           if network_only not in sw:
               sw = sw.replace("if(event.request.method!=='GET')return;\n  ", "if(event.request.method!=='GET')return;\n  " + network_only, 1)

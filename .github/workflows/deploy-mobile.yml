@@ -168,7 +168,7 @@ jobs:
           # not install the browser PWA service worker into its private cache.
           app = re.sub(
               r"if\('serviceWorker'in navigator(?:&&[^)]*)?\)navigator\.serviceWorker\.register\('/sw\.js\?v=\d+'\);",
-              "if('serviceWorker'in navigator&&!/OnlyFloraAndroid\\//.test(navigator.userAgent))navigator.serviceWorker.register('/sw.js?v=40');",
+              "if('serviceWorker'in navigator&&!/OnlyFloraAndroid\\//.test(navigator.userAgent))navigator.serviceWorker.register('/sw.js?v=41');",
               app,
           )
 
@@ -180,16 +180,20 @@ jobs:
 
           styles_path = Path("public/styles.css")
           styles = styles_path.read_text(encoding="utf-8")
-          android_rule = ".onlyflora-android .app-shell{padding-top:0!important}"
+          android_rule = ".onlyflora-android .app-shell{padding-top:40px!important}.onlyflora-android .app-header{top:40px}"
           product_scroll_rule = ".product-view{padding-bottom:220px!important;scroll-padding-bottom:190px}"
-          styles = styles.replace(android_rule, "").replace(product_scroll_rule, "")
+          styles = re.sub(
+              r"\.onlyflora-android \.app-shell\{padding-top:[^}]+\}(?:\.onlyflora-android \.app-header\{top:[^}]+\})?",
+              "",
+              styles,
+          ).replace(product_scroll_rule, "")
           styles += "\n" + android_rule + "\n" + product_scroll_rule + "\n"
           styles_path.write_text(styles, encoding="utf-8")
 
           index_path = Path("public/index.html")
           index = index_path.read_text(encoding="utf-8")
           index = re.sub(r"app\.js\?v=\d+", "app.js?v=32", index)
-          index = re.sub(r"styles\.css\?v=\d+", "styles.css?v=17", index)
+          index = re.sub(r"styles\.css\?v=\d+", "styles.css?v=18", index)
           index = index.replace(
               "https://onlyflora.ru/about/privacy-policy/",
               "https://app.onlyflora.ru/privacy/",
@@ -214,9 +218,9 @@ jobs:
 
           sw_path = Path("public/sw.js")
           sw = sw_path.read_text(encoding="utf-8")
-          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v40", sw)
+          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v41", sw)
           sw = re.sub(r"app\.js\?v=\d+", "app.js?v=32", sw)
-          sw = re.sub(r"styles\.css\?v=\d+", "styles.css?v=17", sw)
+          sw = re.sub(r"styles\.css\?v=\d+", "styles.css?v=18", sw)
           network_only = "if(new URL(event.request.url).origin!==self.location.origin){event.respondWith(fetch(event.request));return}\n  "
           if network_only not in sw:
               sw = sw.replace("if(event.request.method!=='GET')return;\n  ", "if(event.request.method!=='GET')return;\n  " + network_only, 1)

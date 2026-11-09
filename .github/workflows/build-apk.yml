@@ -54,75 +54,19 @@ jobs:
         with:
           gradle-version: "8.11.1"
 
-      - name: Restore stable test signing key
-        uses: actions/cache@v4
-        with:
-          path: ~/.android/debug.keystore
-          key: onlyflora-android-debug-keystore-v1
-          fail-on-cache-miss: true
-
-      - name: Verify stable test signing key
-        run: |
-          test -f "$HOME/.android/debug.keystore"
-          fingerprint="$(keytool -exportcert \
-            -keystore "$HOME/.android/debug.keystore" \
-            -storepass android \
-            -alias androiddebugkey \
-            | sha256sum \
-            | awk '{print $1}')"
-          echo "Restored signing certificate SHA-256: $fingerprint"
-          test "$fingerprint" = "b74fe54f845a7e4c2e81d4886dc2fc78033b02b055fd1515c056cd797810c549"
-
-      - name: Build installable test APK
-        run: |
-          gradle -p android-app :app:assembleDebug \
-            -PONLYFLORA_APP_URL="https://app.onlyflora.ru/?source=android" \
-            --no-daemon --stacktrace
-          mkdir -p test-release
-          cp android-app/app/build/outputs/apk/debug/app-debug.apk \
-            test-release/OnlyFlora-1.0.2-test.apk
-
-      - name: Verify APK signing certificate
-        run: |
-          fingerprint="$("$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" \
-            verify --print-certs test-release/OnlyFlora-1.0.2-test.apk \
-            | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')"
-          test "$fingerprint" = "b74fe54f845a7e4c2e81d4886dc2fc78033b02b055fd1515c056cd797810c549"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: OnlyFlora-1.0.2-test-apk
-          path: test-release/
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Publish test APK at stable download URL
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: |
-          mkdir -p downloads
-          cp test-release/OnlyFlora-1.0.2-test.apk \
-            downloads/OnlyFlora.apk
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add downloads/OnlyFlora.apk
-          if git diff --cached --quiet; then
-            exit 0
-          fi
-          git commit -m "build(android): publish OnlyFlora 1.0.2 test APK"
-          git push
-
-      - name: Restore OnlyFlora release key
-        if: ${{ env.ANDROID_KEYSTORE_BASE64 != '' && env.ANDROID_KEYSTORE_PASSWORD != '' && env.ANDROID_KEY_ALIAS != '' && env.ANDROID_KEY_PASSWORD != '' }}
+      - name: Require OnlyFlora production signing key
         run: |
           test -n "$ANDROID_KEYSTORE_BASE64"
           test -n "$ANDROID_KEYSTORE_PASSWORD"
           test -n "$ANDROID_KEY_ALIAS"
           test -n "$ANDROID_KEY_PASSWORD"
+
+      - name: Restore OnlyFlora production signing key
+        run: |
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/onlyflora-release.jks"
           echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/onlyflora-release.jks" >> "$GITHUB_ENV"
 
       - name: Build signed APK and AAB
-        if: ${{ env.ANDROID_KEYSTORE_PATH != '' }}
         run: |
           gradle -p android-app \
             :app:assembleRelease :app:bundleRelease \
@@ -130,19 +74,39 @@ jobs:
             --no-daemon --stacktrace
 
       - name: Collect release files
-        if: ${{ env.ANDROID_KEYSTORE_PATH != '' }}
         run: |
           mkdir -p release
           cp android-app/app/build/outputs/apk/release/app-release.apk \
-            release/OnlyFlora-1.0.2.apk
+            release/OnlyFlora-1.0.3.apk
           cp android-app/app/build/outputs/bundle/release/app-release.aab \
-            release/OnlyFlora-1.0.2.aab
+            release/OnlyFlora-1.0.3.aab
           sha256sum release/* > release/SHA256SUMS.txt
 
+      - name: Verify production APK signing certificate
+        run: |
+          fingerprint="$("$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" \
+            verify --print-certs release/OnlyFlora-1.0.3.apk \
+            | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')"
+          echo "Production signing certificate SHA-256: $fingerprint"
+          test "$fingerprint" = "ff10f2c63fa74f958cafcdd9cfcbcc79c3de14a816b93abdba88d1e3df58159b"
+
       - uses: actions/upload-artifact@v4
-        if: ${{ env.ANDROID_KEYSTORE_PATH != '' }}
         with:
-          name: OnlyFlora-1.0.2-store-release
+          name: OnlyFlora-1.0.3-store-release
           path: release/
           if-no-files-found: error
           retention-days: 90
+
+      - name: Publish production APK at stable download URL
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          mkdir -p downloads
+          cp release/OnlyFlora-1.0.3.apk downloads/OnlyFlora.apk
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add downloads/OnlyFlora.apk
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "build(android): publish OnlyFlora 1.0.3 production APK"
+          git push

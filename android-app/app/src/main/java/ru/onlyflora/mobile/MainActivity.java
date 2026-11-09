@@ -27,7 +27,7 @@ import android.widget.TextView;
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private static final String APP_HOST = "app.onlyflora.ru";
-    private static final String WEB_RESET_KEY = "web-profile-reset-1.0.2";
+    private static final String WEB_RESET_KEY = "web-profile-reset-1.0.3";
 
     private WebView webView;
     private View errorView;
@@ -128,7 +128,7 @@ public class MainActivity extends Activity {
                                 "await Promise.all(r.map(x=>x.unregister()));}}catch(e){}" +
                                 "try{if('caches'in window){const k=await caches.keys();" +
                                 "await Promise.all(k.map(x=>caches.delete(x)));}}catch(e){}" +
-                                "location.replace('https://app.onlyflora.ru/?source=android&v=10002');" +
+                                "location.replace('https://app.onlyflora.ru/?source=android&v=10003');" +
                                 "})()",
                         null);
             }

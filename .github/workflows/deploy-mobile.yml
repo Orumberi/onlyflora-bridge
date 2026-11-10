@@ -164,11 +164,52 @@ jobs:
           if new_snapshot not in app:
               raise SystemExit("grouped product offer lookup was not added to app.js")
 
+          # Product cards must finish loading even when the live bridge cannot
+          # be reached from a particular Android network. An empty catalogue
+          # result is a normal sold-out state, not a raw browser error.
+          empty_offers = """  if(!liveOffers.length){
+            availability.textContent='Нет предложений в наличии';availability.classList.add('is-error');
+            document.querySelector('#liveOffers').innerHTML='<div class="offer-loading">Сейчас этот товар недоступен для покупки.</div>';
+            document.querySelector('#sizeOptions').innerHTML='<button class="option" type="button">Нет данных</button>';
+            document.querySelector('#supplyOptions').innerHTML='<button class="option" type="button">Нет данных</button>';
+            selectedOffer=null;productQuantity=1;
+            document.querySelector('#productQuantity').textContent='1';
+            document.querySelector('#productPriceLabel').textContent='Цена';
+            document.querySelector('#productPrice').textContent='—';
+            document.querySelector('#addToCart').disabled=true;
+            document.querySelector('#addToCart').textContent='Нет в наличии';
+            return;
+          }
+          availability.textContent=`В наличии"""
+          app, empty_count = re.subn(
+              r"  if\(!liveOffers\.length\)\{.*?    return;\n  \}\n  availability\.textContent=`В наличии",
+              empty_offers,
+              app,
+              count=1,
+              flags=re.S,
+          )
+          if empty_count != 1:
+              raise SystemExit("empty offer state was not patched in app.js")
+
+          failed_fetch = """  }catch(error){
+            const availability=document.querySelector('#productAvailability');
+            availability.textContent='Не удалось проверить остатки';availability.classList.add('is-error');
+            document.querySelector('#liveOffers').innerHTML=`<div class="offer-loading">${escapeHtml(error.message)}</div>`;
+          }
+          }"""
+          safe_fallback = """  }catch{
+            renderOffers([]);
+          }
+          }"""
+          app = app.replace(failed_fetch, safe_fallback, 1)
+          if safe_fallback not in app:
+              raise SystemExit("network error fallback was not patched in app.js")
+
           # Android WebView receives fresh application code directly and does
           # not install the browser PWA service worker into its private cache.
           app = re.sub(
               r"navigator\.serviceWorker\.register\('/sw\.js\?v=\d+'\)",
-              "navigator.serviceWorker.register('/sw.js?v=42')",
+              "navigator.serviceWorker.register('/sw.js?v=43')",
               app,
           )
 
@@ -192,7 +233,7 @@ jobs:
 
           index_path = Path("public/index.html")
           index = index_path.read_text(encoding="utf-8")
-          index = re.sub(r"app\.js\?v=\d+", "app.js?v=32", index)
+          index = re.sub(r"app\.js\?v=\d+", "app.js?v=33", index)
           index = re.sub(r"styles\.css\?v=\d+", "styles.css?v=19", index)
           index = index.replace(
               "https://onlyflora.ru/about/privacy-policy/",
@@ -218,8 +259,8 @@ jobs:
 
           sw_path = Path("public/sw.js")
           sw = sw_path.read_text(encoding="utf-8")
-          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v42", sw)
-          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=32", sw)
+          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v43", sw)
+          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=33", sw)
           sw = re.sub(r"styles\.css\?v=\d+", "styles.css?v=19", sw)
           network_only = "if(new URL(event.request.url).origin!==self.location.origin){event.respondWith(fetch(event.request));return}\n  "
           if network_only not in sw:

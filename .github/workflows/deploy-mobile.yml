@@ -174,8 +174,9 @@ jobs:
               document.querySelector('#supplyOptions').innerHTML='<button class="option" type="button">Нет данных</button>';
               selectedOffer=null;productQuantity=1;
               document.querySelector('#productQuantity').textContent='1';
-              document.querySelector('#productPriceLabel').textContent='Цена';
-              document.querySelector('#productPrice').textContent='—';
+              const catalogPrice=Number(selectedProduct?.price||0);
+              document.querySelector('#productPriceLabel').textContent='Цена по каталогу';
+              document.querySelector('#productPrice').textContent=catalogPrice>0?money(catalogPrice):(selectedProduct?.priceText||'уточняется');
               document.querySelector('#addToCart').disabled=true;
               document.querySelector('#addToCart').textContent='Нет в наличии';
               return;
@@ -212,7 +213,7 @@ jobs:
           # not install the browser PWA service worker into its private cache.
           app = re.sub(
               r"navigator\.serviceWorker\.register\('/sw\.js\?v=\d+'\)",
-              "navigator.serviceWorker.register('/sw.js?v=43')",
+              "navigator.serviceWorker.register('/sw.js?v=44')",
               app,
           )
 
@@ -236,7 +237,7 @@ jobs:
 
           index_path = Path("public/index.html")
           index = index_path.read_text(encoding="utf-8")
-          index = re.sub(r"app\.js\?v=\d+", "app.js?v=33", index)
+          index = re.sub(r"app\.js\?v=\d+", "app.js?v=34", index)
           index = re.sub(r"styles\.css\?v=\d+", "styles.css?v=19", index)
           index = index.replace(
               "https://onlyflora.ru/about/privacy-policy/",
@@ -262,8 +263,8 @@ jobs:
 
           sw_path = Path("public/sw.js")
           sw = sw_path.read_text(encoding="utf-8")
-          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v43", sw)
-          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=33", sw)
+          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v44", sw)
+          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=34", sw)
           sw = re.sub(r"styles\.css\?v=\d+", "styles.css?v=19", sw)
           network_only = "if(new URL(event.request.url).origin!==self.location.origin){event.respondWith(fetch(event.request));return}\n  "
           if network_only not in sw:

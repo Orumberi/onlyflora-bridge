@@ -619,3 +619,244 @@ body.of-modern-active > footer {
   .of-footer { grid-template-columns: 1fr; gap: 18px; }
   .of-footer nav { display: grid; gap: 9px; }
 }
+
+/* ONLYFLORA APP INNER PAGES V1 */
+body.of-modern-header-active > .main_wrapper > .header_top_banner,
+body.of-modern-header-active > .main_wrapper > .header,
+body.of-modern-header-active > .main_wrapper > .top-slider-holder,
+body.of-modern-header-active > .main_wrapper > .sidebar_holder {
+  display:none!important;
+}
+body.of-modern-header-active > .main_wrapper {
+  min-height:100vh;
+  background:#f3f8f5!important;
+}
+body.of-modern-header-active .content_holder.main_content_holder {
+  float:none!important;
+  width:100%!important;
+  max-width:1120px;
+  margin:0 auto!important;
+  padding:0 18px 110px!important;
+}
+body.of-modern-header-active .maincontent,
+body.of-modern-header-active #page-content {
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+}
+body.of-modern-header-active .product-page {
+  max-width:980px;
+  margin:0 auto;
+  padding:24px 0 42px;
+}
+body.of-modern-header-active .product-page h1,
+body.of-modern-header-active #page-content > h1 {
+  margin:0 0 12px!important;
+  color:#10261b!important;
+  font:800 clamp(28px,4vw,44px)/1.08 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  letter-spacing:-.04em!important;
+  text-align:left!important;
+  text-transform:none!important;
+}
+body.of-modern-header-active .breadcrumbs {
+  margin:0 0 20px!important;
+  color:#718078!important;
+  font-size:13px!important;
+  line-height:1.45!important;
+}
+body.of-modern-header-active .breadcrumbs a { color:#557164!important; text-decoration:none!important; }
+body.of-modern-header-active #cart-form {
+  float:none!important;
+  width:100%!important;
+  max-width:780px;
+  margin:0 auto!important;
+  padding:24px!important;
+  border:1px solid #dfe9e2!important;
+  border-radius:24px!important;
+  background:#fff!important;
+  box-shadow:0 16px 44px rgba(25,71,45,.10)!important;
+}
+body.of-modern-header-active #cart-form .product-sidebar-heading {
+  margin:0 0 10px!important;
+  color:#10261b!important;
+  font:800 25px/1.15 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  text-align:left!important;
+  text-transform:none!important;
+}
+body.of-modern-header-active #cart-form .product-sidebar-summary {
+  margin-bottom:22px!important;
+  color:#5d6c64!important;
+  font-size:15px!important;
+  line-height:1.5!important;
+}
+body.of-modern-header-active #cart-form .options { margin:0!important; }
+body.of-modern-header-active #cart-form .choose_name {
+  display:block!important;
+  margin:18px 0 8px!important;
+  color:#284235!important;
+  font:750 12px/1.35 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+  letter-spacing:.025em!important;
+  text-transform:none!important;
+}
+body.of-modern-header-active #cart-form .onlyflora-nursery-toggle,
+body.of-modern-header-active #cart-form .onlyflora-feature-toggle,
+body.of-modern-header-active #cart-form .onlyflora-size-button {
+  min-height:52px!important;
+  padding:12px 16px!important;
+  border:1px solid #cfe1d6!important;
+  border-radius:15px!important;
+  background:#f7faf8!important;
+  color:#143623!important;
+  box-shadow:none!important;
+  font:750 15px/1.25 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+}
+body.of-modern-header-active #cart-form .onlyflora-size-button.is-selected,
+body.of-modern-header-active #cart-form .onlyflora-feature-item.is-selected,
+body.of-modern-header-active #cart-form .onlyflora-nursery-item.is-selected {
+  border-color:#109449!important;
+  background:#eaf7ee!important;
+  color:#087536!important;
+}
+body.of-modern-header-active #cart-form .stocks {
+  margin:18px 0 8px!important;
+  color:#087536!important;
+  font-weight:800!important;
+}
+body.of-modern-header-active #cart-form .price,
+body.of-modern-header-active #cart-form .pricing {
+  margin:12px 0!important;
+  color:#10261b!important;
+  font-size:30px!important;
+  font-weight:850!important;
+}
+body.of-modern-header-active #cart-form .product_cart_button {
+  min-height:56px!important;
+  padding:0 28px!important;
+  border:0!important;
+  border-radius:17px!important;
+  background:linear-gradient(145deg,#20ae55,#07853a)!important;
+  color:#fff!important;
+  box-shadow:0 10px 24px rgba(8,133,58,.24)!important;
+  font:800 16px/1 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+}
+body.of-modern-header-active .product-page .overview {
+  float:none!important;
+  width:100%!important;
+  max-width:980px;
+  margin:22px auto 0!important;
+  padding:22px!important;
+  border:1px solid #dfe9e2!important;
+  border-radius:22px!important;
+  background:#fff!important;
+}
+body.of-modern-header-active .s-cart-empty-wrapper {
+  max-width:760px;
+  margin:26px auto 0!important;
+  padding:20px!important;
+  border:1px solid #dfe9e2;
+  border-radius:24px;
+  background:#fff;
+  box-shadow:0 16px 44px rgba(25,71,45,.10);
+}
+body.of-modern-header-active .s-cart-empty-wrapper img {
+  display:block;
+  width:auto!important;
+  max-width:100%!important;
+  max-height:440px!important;
+  margin:0 auto!important;
+  object-fit:contain!important;
+  border-radius:20px;
+}
+body.of-modern-header-active .s-cart-empty-wrapper .well {
+  margin:14px 0 0!important;
+  padding:18px!important;
+  border:0!important;
+  border-radius:18px!important;
+  background:#f1f8f3!important;
+  box-shadow:none!important;
+}
+body.of-modern-header-active .s-cart-empty-wrapper .h2 {
+  margin:0 0 14px!important;
+  color:#10261b!important;
+  font:800 25px/1.15 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;
+}
+body.of-modern-header-active .s-cart-empty-wrapper .button {
+  border:0!important;
+  border-radius:14px!important;
+  background:#0a8d40!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+body.of-modern-header-active .footer,
+body.of-modern-header-active .footer_holder { border-top-color:#dfe9e2!important; }
+
+@media (max-width:640px) {
+  body.of-modern-header-active .of-nav-wrap { display:none!important; }
+  body.of-modern-header-active #onlyflora-modern-home.of-modern-inner {
+    position:relative;
+    z-index:500;
+    border-bottom:1px solid #dfe9e2;
+    background:#fff;
+  }
+  body.of-modern-header-active .content_holder.main_content_holder {
+    padding:0 12px 102px!important;
+  }
+  body.of-modern-header-active .product-page { padding:20px 0 28px; }
+  body.of-modern-header-active .product-page h1,
+  body.of-modern-header-active #page-content > h1 {
+    font-size:27px!important;
+    line-height:1.1!important;
+  }
+  body.of-modern-header-active .breadcrumbs {
+    display:flex!important;
+    gap:6px;
+    overflow-x:auto;
+    padding:0 0 6px!important;
+    white-space:nowrap;
+    scrollbar-width:none;
+  }
+  body.of-modern-header-active .breadcrumbs::-webkit-scrollbar { display:none; }
+  body.of-modern-header-active #cart-form {
+    padding:18px 15px 20px!important;
+    border-radius:22px!important;
+  }
+  body.of-modern-header-active #cart-form .product-sidebar-heading { font-size:22px!important; }
+  body.of-modern-header-active #cart-form .product-sidebar-summary { font-size:14px!important; }
+  body.of-modern-header-active #cart-form .onlyflora-nursery-toggle,
+  body.of-modern-header-active #cart-form .onlyflora-feature-toggle,
+  body.of-modern-header-active #cart-form .onlyflora-size-button {
+    width:100%!important;
+    text-align:left!important;
+  }
+  body.of-modern-header-active #cart-form .product_cart_button {
+    width:100%!important;
+    margin-top:12px!important;
+  }
+  body.of-modern-header-active .product-page .overview {
+    margin-top:16px!important;
+    padding:17px 14px!important;
+    border-radius:20px!important;
+  }
+  body.of-modern-header-active .s-cart-empty-wrapper {
+    margin:18px auto 0!important;
+    padding:14px!important;
+    border-radius:22px;
+  }
+  body.of-modern-header-active .s-cart-empty-wrapper img {
+    max-height:330px!important;
+    border-radius:17px;
+  }
+  body.of-modern-header-active .s-cart-empty-wrapper .well {
+    padding:16px 12px!important;
+  }
+  body.of-modern-header-active .s-cart-empty-wrapper .h2 { font-size:22px!important; }
+  body.of-modern-header-active .footer,
+  body.of-modern-header-active .footer_holder { display:none!important; }
+  body.of-modern-header-active .cart_panel_holder {
+    border-top:1px solid #dce7df!important;
+    background:rgba(255,255,255,.96)!important;
+    box-shadow:0 -8px 30px rgba(23,62,40,.10)!important;
+    backdrop-filter:blur(16px);
+  }
+}

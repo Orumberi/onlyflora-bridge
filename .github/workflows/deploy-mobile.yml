@@ -88,9 +88,26 @@ jobs:
           """
           app = app.replace(function_needle, bridge + function_needle, 1)
 
-          android_class = "if(/OnlyFloraAndroid\\//.test(navigator.userAgent))document.documentElement.classList.add('onlyflora-android');\n"
-          app = app.replace(android_class, "")
-          app = android_class + app
+          app = re.sub(
+              r"/\* ONLYFLORA_ANDROID_CLASSES_START \*/.*?/\* ONLYFLORA_ANDROID_CLASSES_END \*/\n",
+              "",
+              app,
+              flags=re.S,
+          )
+          app = app.replace(
+              "if(/OnlyFloraAndroid\\//.test(navigator.userAgent))document.documentElement.classList.add('onlyflora-android');\n",
+              "",
+          )
+          android_classes = r'''/* ONLYFLORA_ANDROID_CLASSES_START */
+          const onlyFloraAndroidVersion=navigator.userAgent.match(/OnlyFloraAndroid\/(\d+)\.(\d+)\.(\d+)/);
+          if(onlyFloraAndroidVersion){
+            document.documentElement.classList.add('onlyflora-android');
+            const versionCode=Number(onlyFloraAndroidVersion[1])*10000+Number(onlyFloraAndroidVersion[2])*100+Number(onlyFloraAndroidVersion[3]);
+            if(versionCode<10005)document.documentElement.classList.add('onlyflora-android-legacy-bottom');
+          }
+          /* ONLYFLORA_ANDROID_CLASSES_END */
+          '''
+          app = android_classes + app
 
           # Re-patch jsonRequest idempotently.
           app = app.replace("fetch(resolveOnlyFloraApiUrl(url),", "fetch(url,", 1)
@@ -213,7 +230,7 @@ jobs:
           # not install the browser PWA service worker into its private cache.
           app = re.sub(
               r"navigator\.serviceWorker\.register\('/sw\.js\?v=\d+'\)",
-              "navigator.serviceWorker.register('/sw.js?v=44')",
+              "navigator.serviceWorker.register('/sw.js?v=45')",
               app,
           )
 
@@ -227,18 +244,19 @@ jobs:
           styles = styles_path.read_text(encoding="utf-8")
           android_rule = ".onlyflora-android .app-shell{padding-top:0!important}"
           product_scroll_rule = ".product-view{padding-bottom:220px!important;scroll-padding-bottom:190px}"
+          legacy_bottom_rule = ".onlyflora-android-legacy-bottom .bottom-nav{bottom:40px!important}.onlyflora-android-legacy-bottom .buy-bar{bottom:112px!important}.onlyflora-android-legacy-bottom .toast{bottom:128px!important}.onlyflora-android-legacy-bottom .view:not(.product-view){padding-bottom:130px!important}"
           styles = re.sub(
               r"\.onlyflora-android \.app-shell\{padding-top:[^}]+\}(?:\.onlyflora-android \.app-header\{top:[^}]+\})?",
               "",
               styles,
-          ).replace(product_scroll_rule, "")
-          styles += "\n" + android_rule + "\n" + product_scroll_rule + "\n"
+          ).replace(product_scroll_rule, "").replace(legacy_bottom_rule, "")
+          styles += "\n" + android_rule + "\n" + product_scroll_rule + "\n" + legacy_bottom_rule + "\n"
           styles_path.write_text(styles, encoding="utf-8")
 
           index_path = Path("public/index.html")
           index = index_path.read_text(encoding="utf-8")
-          index = re.sub(r"app\.js\?v=\d+", "app.js?v=34", index)
-          index = re.sub(r"styles\.css\?v=\d+", "styles.css?v=19", index)
+          index = re.sub(r"app\.js\?v=\d+", "app.js?v=35", index)
+          index = re.sub(r"styles\.css\?v=\d+", "styles.css?v=20", index)
           index = index.replace(
               "https://onlyflora.ru/about/privacy-policy/",
               "https://app.onlyflora.ru/privacy/",
@@ -263,9 +281,9 @@ jobs:
 
           sw_path = Path("public/sw.js")
           sw = sw_path.read_text(encoding="utf-8")
-          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v44", sw)
-          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=34", sw)
-          sw = re.sub(r"styles\.css\?v=\d+", "styles.css?v=19", sw)
+          sw = re.sub(r"onlyflora-mobile-v\d+", "onlyflora-mobile-v45", sw)
+          sw = re.sub(r"app\.js\?v=\d+", "app.js?v=35", sw)
+          sw = re.sub(r"styles\.css\?v=\d+", "styles.css?v=20", sw)
           network_only = "if(new URL(event.request.url).origin!==self.location.origin){event.respondWith(fetch(event.request));return}\n  "
           if network_only not in sw:
               sw = sw.replace("if(event.request.method!=='GET')return;\n  ", "if(event.request.method!=='GET')return;\n  " + network_only, 1)

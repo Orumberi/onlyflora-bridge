@@ -29,7 +29,7 @@ import android.widget.TextView;
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private static final String APP_HOST = "app.onlyflora.ru";
-    private static final String WEB_RESET_KEY = "web-profile-reset-1.0.4";
+    private static final String WEB_RESET_KEY = "web-profile-reset-1.0.5";
 
     private WebView webView;
     private View errorView;
@@ -135,7 +135,7 @@ public class MainActivity extends Activity {
                                 "await Promise.all(r.map(x=>x.unregister()));}}catch(e){}" +
                                 "try{if('caches'in window){const k=await caches.keys();" +
                                 "await Promise.all(k.map(x=>caches.delete(x)));}}catch(e){}" +
-                                "location.replace('https://app.onlyflora.ru/?source=android&v=10004');" +
+                                "location.replace('https://app.onlyflora.ru/?source=android&v=10005');" +
                                 "})()",
                         null);
             }
@@ -203,8 +203,10 @@ public class MainActivity extends Activity {
         }
         root.setOnApplyWindowInsetsListener((view, insets) -> {
             android.graphics.Insets safeArea = insets.getInsets(
-                    WindowInsets.Type.statusBars() | WindowInsets.Type.displayCutout());
-            view.setPadding(0, safeArea.top, 0, 0);
+                    WindowInsets.Type.statusBars()
+                            | WindowInsets.Type.navigationBars()
+                            | WindowInsets.Type.displayCutout());
+            view.setPadding(0, safeArea.top, 0, safeArea.bottom);
             return insets;
         });
     }

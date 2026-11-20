@@ -1,2 +1,3 @@
 OnlyFlora 1.0.5 production
 Signing certificate SHA-256: ff10f2c63fa74f958cafcdd9cfcbcc79c3de14a816b93abdba88d1e3df58159b
+Version code: 10005

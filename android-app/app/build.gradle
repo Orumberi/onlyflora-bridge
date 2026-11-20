@@ -18,8 +18,8 @@ android {
         applicationId "ru.onlyflora.mobileapp"
         minSdk 24
         targetSdk 36
-        versionCode 10004
-        versionName "1.0.4"
+        versionCode 10005
+        versionName "1.0.5"
         buildConfigField "String", "APP_URL", "\"${onlyFloraAppUrl}\""
     }
 

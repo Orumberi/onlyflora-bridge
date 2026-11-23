@@ -892,6 +892,120 @@ body.of-modern-active > footer {
   .product-list li .price { font-size: 21px !important; }
 }
 
+/* Compact mobile catalogue cards. This deliberately comes after the legacy
+   responsive rules so hover/list/grid modes cannot stretch the cards again. */
+@media (max-width: 640px) {
+  .product-list li.flexdiscount-product-wrap,
+  .product-list li.view_class,
+  .product-list li[class*="col-"] {
+    margin-bottom: 10px !important;
+    padding-inline: 8px !important;
+  }
+  .product-list li .product,
+  .product-list li .product:hover,
+  .product-list li .product.noshadow,
+  .product-list li .product.animated_shadow {
+    border-radius: 18px !important;
+  }
+  .product-list li form.purchase {
+    grid-template-columns: 104px minmax(0, 1fr) !important;
+    min-height: 178px !important;
+  }
+  .product-list li .image_holder {
+    width: 104px !important;
+    min-height: 178px !important;
+    border-right-color: #edf3ef !important;
+    background: #f4f9f6 !important;
+  }
+  .product-list li .image_holder .valign,
+  .product-list li .image_holder .cover-container {
+    min-height: 178px !important;
+    background: #f4f9f6 !important;
+  }
+  .product-list li .image_holder img {
+    min-height: 178px !important;
+    box-sizing: border-box !important;
+  }
+  .product-list li .image_holder img.of-product-image-fallback {
+    padding: 13px !important;
+    object-fit: contain !important;
+    background: #f4f9f6 !important;
+  }
+  .product-list li .product_content,
+  .product-list li .product:hover .product_content {
+    min-height: 178px !important;
+    padding: 12px 11px 10px !important;
+  }
+  .product-list li .product_title,
+  .product-list li .product:hover .product_title {
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+  }
+  .product-list li .product_details {
+    margin-top: 5px !important;
+  }
+  .product-list li .summary {
+    max-height: 2.5em !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+  }
+  .product-list li .product_offers {
+    padding-top: 7px !important;
+  }
+  .product-list li .pricing {
+    margin-bottom: 5px !important;
+  }
+  .product-list li .price {
+    font-size: 20px !important;
+    line-height: 1 !important;
+  }
+  .product-list li .offers,
+  .product-list li .item-qty {
+    flex-wrap: nowrap !important;
+  }
+  .product-list li .qty {
+    gap: 6px !important;
+  }
+  .product-list li .qty a {
+    font-size: 16px !important;
+  }
+  .product-list li .qty input {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 15px !important;
+  }
+  .product-list li .qty-description {
+    margin-left: 5px !important;
+    font-size: 10px !important;
+  }
+  .product-list li .xs-align-center {
+    display: block !important;
+    margin-top: 6px !important;
+  }
+  .product-list li button.button100 {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 96px !important;
+    height: 32px !important;
+    padding-inline: 12px !important;
+    border-radius: 10px !important;
+    font-size: 11px !important;
+    line-height: 32px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .product-list li form.purchase { grid-template-columns: 94px minmax(0, 1fr) !important; min-height: 174px !important; }
+  .product-list li .image_holder { width: 94px !important; min-height: 174px !important; }
+  .product-list li .image_holder .valign,
+  .product-list li .image_holder .cover-container,
+  .product-list li .image_holder img { min-height: 174px !important; }
+  .product-list li .product_content { min-height: 174px !important; padding-inline: 10px !important; }
+  .product-list li .product_title { font-size: 14px !important; }
+  .product-list li .price { font-size: 19px !important; }
+}
+
 /* ONLYFLORA APP INNER PAGES V1 */
 body.of-modern-header-active > .main_wrapper > .header_top_banner,
 body.of-modern-header-active > .main_wrapper > .header,

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#08753b">
+  <meta name="description" content="OnlyFlora Mobile — растения от питомников России">
+  <title>OnlyFlora Mobile 1.0</title>
+  <link rel="manifest" href="/manifest.webmanifest?v=2">
+  <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/icon-192-v2.png">
+  <link rel="stylesheet" href="/styles.css?v=20">
+  <link rel="stylesheet" href="/variants.css?v=1">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <a class="brand" href="#home" data-route="home" aria-label="OnlyFlora — главная">
+        <img src="/assets/logo.svg" alt="" width="44" height="44">
+        <span class="brand-copy"><strong>Only<span>Flora</span></strong><small>Бедный не имеет тени</small></span>
+      </a>
+      <button class="round-button" id="installButton" type="button" aria-label="Установить приложение" title="Установить приложение">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 16v3h14v-3"/></svg>
+      </button>
+    </header>
+
+    <main id="appMain">
+      <section class="view is-active" data-view="home" aria-labelledby="homeTitle">
+        <div class="content home-content">
+          <label class="search-box" for="homeSearch">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+            <input id="homeSearch" type="search" autocomplete="off" placeholder="Найти растение или товар">
+            <button class="camera-button" type="button" data-route="egor" aria-label="Поиск по фотографии">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 7h3l1.5-2h5L16 7h3v12H5Z"/><circle cx="12" cy="13" r="3.2"/></svg>
+            </button>
+          </label>
+
+          <article class="hero" id="homeTitle">
+            <div class="hero-media" aria-hidden="true"></div>
+            <div class="hero-shade" aria-hidden="true"></div>
+            <div class="hero-copy">
+              <span>ТОРГОВАЯ ПЛОЩАДКА</span>
+              <h1>Растения от питомников России</h1>
+              <p>Предложения питомников и садовых центров со всей России</p>
+              <button class="primary-button light" type="button" data-all-categories>Открыть площадку</button>
+            </div>
+          </article>
+
+          <div class="benefits" aria-label="Преимущества OnlyFlora">
+            <span><b>50+</b><small>садовых центров</small></span>
+            <span><b>РФ</b><small>доставка по России</small></span>
+            <span><b>✓</b><small>проверенные питомники</small></span>
+          </div>
+
+          <div class="section-heading"><h2>Категории</h2><button type="button" data-all-categories>Смотреть все</button></div>
+          <div class="category-grid">
+            <button class="category-card" type="button" data-query="клён" data-route="search"><img src="/assets/category-deciduous.webp" alt=""><span>Лиственные</span></button>
+            <button class="category-card" type="button" data-query="туя" data-route="search"><img src="/assets/category-conifers.webp" alt=""><span>Хвойные</span></button>
+            <button class="category-card" type="button" data-query="барбарис" data-route="search"><img src="/assets/category-shrubs.webp" alt=""><span>Кустарники</span></button>
+            <button class="category-card" type="button" data-query="гортензия" data-route="search"><img src="/assets/category-perennials.webp" alt=""><span>Многолетники</span></button>
+          </div>
+
+          <details class="legal-disclosure">
+            <summary><span aria-hidden="true">OF</span><b>Контакты и документы</b><i>›</i></summary>
+            <div class="legal-disclosure-body">
+              <strong>ИП Костына Анатолий Романович</strong>
+              <p>ИНН 480901738236 · ОГРНИП 322508100287772<br>Московская область, д. Рузино</p>
+              <a class="contact-link" href="mailto:agro@onlyflora.ru">agro@onlyflora.ru</a>
+              <nav class="legal-links" aria-label="Документы OnlyFlora">
+                <a href="https://app.onlyflora.ru/privacy/" target="_blank" rel="noopener">Политика обработки персональных данных <i>↗</i></a>
+                <a href="https://app.onlyflora.ru/marketplace-rules/" target="_blank" rel="noopener">Правила торговой площадки <i>↗</i></a>
+                <a href="https://app.onlyflora.ru/account-deletion/" target="_blank" rel="noopener">Удаление аккаунта и данных <i>↗</i></a>
+              </nav>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section class="view" data-view="search" aria-labelledby="searchTitle" hidden>
+        <div class="page-head"><button class="back-button" type="button" data-route="home" aria-label="Назад">←</button><h1 id="searchTitle">Поиск растений</h1><button class="round-button" type="button" aria-label="Фильтры">☷</button></div>
+        <div class="content">
+          <label class="search-box" for="catalogSearch">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+            <input id="catalogSearch" type="search" autocomplete="off" placeholder="Клён, туя, гортензия…">
+            <button class="clear-search" id="clearSearch" type="button" aria-label="Очистить">×</button>
+          </label>
+          <div class="layout-hint" id="layoutHint" hidden></div>
+          <div class="filter-row" aria-label="Быстрые фильтры">
+            <button class="chip is-active" type="button">Все</button><button class="chip" type="button">В наличии</button><button class="chip" type="button">Москва</button><button class="chip" type="button">Цена</button>
+          </div>
+          <div class="result-meta"><strong id="resultCount">0 предложений</strong><span id="catalogStatus">Введите название</span></div>
+          <div class="all-categories" id="allCategories" hidden>
+            <details class="category-group">
+              <summary><span class="category-thumb"><img src="/assets/category-deciduous.webp" alt=""></span><b>Лиственные деревья</b><small>517 товаров · 12 категорий</small><i>›</i></summary>
+              <div class="category-children">
+                <button type="button" data-query="береза" data-route="search"><b>Березы</b><small>22</small></button><button type="button" data-query="вяз" data-route="search"><b>Вязы</b><small>15</small></button><button type="button" data-query="дуб" data-route="search"><b>Дубы</b><small>28</small></button><button type="button" data-query="ива" data-route="search"><b>Ивы</b><small>84</small></button><button type="button" data-query="клён" data-route="search"><b>Клены</b><small>82</small></button><button type="button" data-query="липа" data-route="search"><b>Липы</b><small>54</small></button><button type="button" data-query="рябина" data-route="search"><b>Рябины</b><small>45</small></button><button type="button" data-query="тополь" data-route="search"><b>Тополя</b><small>15</small></button><button type="button" data-query="черемуха" data-route="search"><b>Черемухи</b><small>15</small></button><button type="button" data-query="ясень" data-route="search"><b>Ясени</b><small>0</small></button><button type="button" data-query="декоративная яблоня" data-route="search"><b>Декоративные яблони</b><small>2</small></button><button type="button" data-query="лиственное дерево" data-route="search"><b>Другие лиственные</b><small>157</small></button>
+              </div>
+            </details>
+            <details class="category-group">
+              <summary><span class="category-thumb"><img src="/assets/category-shrubs.webp" alt=""></span><b>Лиственные кустарники</b><small>Все группы каталога</small><i>›</i></summary>
+              <div class="category-children">
+                <button type="button" data-query="барбарис" data-route="search"><b>Барбарисы</b><small>69</small></button><button type="button" data-query="бересклет" data-route="search"><b>Бересклеты</b><small>15</small></button><button type="button" data-query="боярышник" data-route="search"><b>Боярышники</b><small>30</small></button><button type="button" data-query="вейгела" data-route="search"><b>Вейгелы</b><small>1</small></button><button type="button" data-query="гортензия" data-route="search"><b>Гортензии</b><small>162</small></button><button type="button" data-query="гортензия метельчатая" data-route="search"><b>— Метельчатые</b><small></small></button><button type="button" data-query="гортензия древовидная" data-route="search"><b>— Древовидные</b><small></small></button><button type="button" data-query="гортензия крупнолистная" data-route="search"><b>— Крупнолистные</b><small></small></button><button type="button" data-query="гортензия черешковая" data-route="search"><b>— Черешковые</b><small></small></button><button type="button" data-query="дерен" data-route="search"><b>Дерены</b><small>38</small></button><button type="button" data-query="жимолость" data-route="search"><b>Жимолости</b><small>35</small></button><button type="button" data-query="калина" data-route="search"><b>Калины</b><small>37</small></button><button type="button" data-query="кизильник" data-route="search"><b>Кизильники</b><small>8</small></button><button type="button" data-query="лапчатка" data-route="search"><b>Лапчатки</b><small>41</small></button><button type="button" data-query="пузыреплодник" data-route="search"><b>Пузыреплодники</b><small>12</small></button><button type="button" data-query="сирень" data-route="search"><b>Сирени</b><small>185</small></button><button type="button" data-query="спирея" data-route="search"><b>Спиреи</b><small>89</small></button><button type="button" data-query="чубушник" data-route="search"><b>Чубушники</b><small>45</small></button><button type="button" data-query="кустарник" data-route="search"><b>Другие кустарники</b><small>1768</small></button>
+              </div>
+            </details>
+            <details class="category-group">
+              <summary><span class="category-thumb"><img src="/assets/category-conifers.webp" alt=""></span><b>Хвойные</b><small>475 товаров · 7 категорий</small><i>›</i></summary>
+              <div class="category-children"><button type="button" data-query="сосна" data-route="search"><b>Сосны</b><small>110</small></button><button type="button" data-query="можжевельник" data-route="search"><b>Можжевельники</b><small>114</small></button><button type="button" data-query="туя" data-route="search"><b>Туи</b><small>89</small></button><button type="button" data-query="ель" data-route="search"><b>Ели</b><small>89</small></button><button type="button" data-query="лиственница" data-route="search"><b>Лиственницы</b><small>30</small></button><button type="button" data-query="пихта" data-route="search"><b>Пихты</b><small>27</small></button><button type="button" data-query="хвойное" data-route="search"><b>Другие хвойные</b><small>16</small></button></div>
+            </details>
+            <details class="category-group">
+              <summary><span class="category-thumb"><img src="/assets/category-perennials.webp" alt=""></span><b>Многолетники</b><small>347 товаров · 13 категорий</small><i>›</i></summary>
+              <div class="category-children"><button type="button" data-query="астильба" data-route="search"><b>Астильбы</b><small></small></button><button type="button" data-query="астра" data-route="search"><b>Астры</b><small></small></button><button type="button" data-query="гейхера" data-route="search"><b>Гейхеры</b><small></small></button><button type="button" data-query="герань" data-route="search"><b>Герани</b><small></small></button><button type="button" data-query="ирис" data-route="search"><b>Ирисы</b><small></small></button><button type="button" data-query="котовник" data-route="search"><b>Котовники</b><small></small></button><button type="button" data-query="лилейник" data-route="search"><b>Лилейники</b><small></small></button><button type="button" data-query="пион" data-route="search"><b>Пионы</b><small></small></button><button type="button" data-query="шалфей" data-route="search"><b>Шалфеи</b><small></small></button><button type="button" data-query="эхинацея" data-route="search"><b>Эхинацеи</b><small></small></button><button type="button" data-query="папоротник" data-route="search"><b>Папоротники</b><small></small></button><button type="button" data-query="жимолость" data-route="search"><b>Жимолости</b><small></small></button><button type="button" data-query="многолетник" data-route="search"><b>Другие многолетники</b><small></small></button></div>
+            </details>
+            <details class="category-group"><summary><span class="category-thumb"><img src="/assets/category-grasses.webp" alt=""></span><b>Декоративные злаки</b><small>6 категорий</small><i>›</i></summary><div class="category-children"><button type="button" data-query="вейник" data-route="search"><b>Вейники</b><small></small></button><button type="button" data-query="щучка" data-route="search"><b>Щучки</b><small></small></button><button type="button" data-query="молиния" data-route="search"><b>Молинии</b><small></small></button><button type="button" data-query="колосняк" data-route="search"><b>Колосняки</b><small></small></button><button type="button" data-query="канареечник" data-route="search"><b>Канареечники</b><small></small></button><button type="button" data-query="декоративный злак" data-route="search"><b>Другие злаки</b><small></small></button></div></details>
+            <details class="category-group"><summary><span class="category-thumb"><img src="/assets/category-perennials.webp" alt=""></span><b>Почвопокровные</b><small>5 категорий</small><i>›</i></summary><div class="category-children"><button type="button" data-query="барвинок" data-route="search"><b>Барвинок</b><small></small></button><button type="button" data-query="живучка" data-route="search"><b>Живучка</b><small></small></button><button type="button" data-query="яснотка" data-route="search"><b>Яснотка</b><small></small></button><button type="button" data-query="копытень" data-route="search"><b>Копытень</b><small></small></button><button type="button" data-query="почвопокровное" data-route="search"><b>Другие</b><small></small></button></div></details>
+            <details class="category-group"><summary><span class="category-thumb"><img src="/assets/category-roses.webp" alt=""></span><b>Розы</b><small>7 категорий</small><i>›</i></summary><div class="category-children"><button type="button" data-query="роза чайно-гибридная" data-route="search"><b>Чайно-гибридные</b><small></small></button><button type="button" data-query="роза флорибунда" data-route="search"><b>Флорибунда</b><small></small></button><button type="button" data-query="роза плетистая" data-route="search"><b>Плетистые</b><small></small></button><button type="button" data-query="роза почвопокровная" data-route="search"><b>Почвопокровные</b><small></small></button><button type="button" data-query="роза шраб" data-route="search"><b>Шрабы</b><small></small></button><button type="button" data-query="роза бордюрная" data-route="search"><b>Бордюрные</b><small></small></button><button type="button" data-query="роза" data-route="search"><b>Другие</b><small></small></button></div></details>
+            <details class="category-group"><summary><span class="category-thumb"><img src="/assets/category-shrubs.webp" alt=""></span><b>Лианы</b><small>4 категории</small><i>›</i></summary><div class="category-children"><button type="button" data-query="девичий виноград" data-route="search"><b>Девичий виноград</b><small></small></button><button type="button" data-query="жимолость" data-route="search"><b>Жимолость</b><small></small></button><button type="button" data-query="гортензия черешковая" data-route="search"><b>Гортензия черешковая</b><small></small></button><button type="button" data-query="лиана" data-route="search"><b>Другие лианы</b><small></small></button></div></details>
+            <details class="category-group"><summary><span class="category-thumb"><img src="/assets/category-fruits.webp" alt=""></span><b>Плодовые</b><small>Деревья, кустарники, ягоды</small><i>›</i></summary><div class="category-children"><button type="button" data-query="яблоня" data-route="search"><b>Яблони</b><small></small></button><button type="button" data-query="груша" data-route="search"><b>Груши</b><small></small></button><button type="button" data-query="вишня" data-route="search"><b>Вишни</b><small></small></button><button type="button" data-query="черешня" data-route="search"><b>Черешни</b><small></small></button><button type="button" data-query="плодовое дерево" data-route="search"><b>Другие плодовые деревья</b><small></small></button><button type="button" data-query="плодовый кустарник" data-route="search"><b>Плодовые кустарники</b><small></small></button><button type="button" data-query="ягодная культура" data-route="search"><b>Ягодные культуры</b><small></small></button></div></details>
+            <details class="category-group"><summary><span class="category-thumb"><img src="/assets/category-deciduous.webp" alt=""></span><b>Крупномеры</b><small>Лиственные и хвойные</small><i>›</i></summary><div class="category-children"><button type="button" data-query="лиственный крупномер" data-route="search"><b>Лиственные крупномеры</b><small></small></button><button type="button" data-query="хвойный крупномер" data-route="search"><b>Хвойные крупномеры</b><small></small></button></div></details>
+            <details class="category-group"><summary><span class="category-thumb"><img src="/assets/category-euonymus.webp" alt=""></span><b>Формованные растения</b><small>10 форм</small><i>›</i></summary><div class="category-children"><button type="button" data-query="форма шар" data-route="search"><b>Шары</b><small></small></button><button type="button" data-query="форма конус" data-route="search"><b>Конусы</b><small></small></button><button type="button" data-query="форма спираль" data-route="search"><b>Спирали</b><small></small></button><button type="button" data-query="форма куб" data-route="search"><b>Кубы</b><small></small></button><button type="button" data-query="форма арка" data-route="search"><b>Арки</b><small></small></button><button type="button" data-query="форма зонт" data-route="search"><b>Зонты</b><small></small></button><button type="button" data-query="ниваки" data-route="search"><b>Ниваки</b><small></small></button><button type="button" data-query="бонсай" data-route="search"><b>Бонсай</b><small></small></button><button type="button" data-query="мультиштамб" data-route="search"><b>Мультиштамб</b><small></small></button><button type="button" data-query="формованное растение" data-route="search"><b>Другие формы</b><small></small></button></div></details>
+            <details class="category-group"><summary><span class="category-thumb"><img src="/assets/category-hedges.webp" alt=""></span><b>Блоки живой изгороди</b><small>Лиственные и хвойные</small><i>›</i></summary><div class="category-children"><button type="button" data-query="лиственный блок живой изгороди" data-route="search"><b>Лиственные</b><small>21</small></button><button type="button" data-query="хвойный блок живой изгороди" data-route="search"><b>Хвойные</b><small>3</small></button></div></details>
+            <details class="legal-disclosure compact">
+              <summary><span aria-hidden="true">OF</span><b>Контакты и документы</b><i>›</i></summary>
+              <div class="legal-disclosure-body">
+                <strong>ИП Костына Анатолий Романович</strong>
+                <p>ИНН 480901738236 · ОГРНИП 322508100287772<br>Московская область, д. Рузино</p>
+                <a class="contact-link" href="mailto:agro@onlyflora.ru">agro@onlyflora.ru</a>
+                <nav class="legal-links" aria-label="Документы OnlyFlora">
+                  <a href="https://app.onlyflora.ru/privacy/" target="_blank" rel="noopener">Политика персональных данных <i>↗</i></a>
+                  <a href="https://app.onlyflora.ru/marketplace-rules/" target="_blank" rel="noopener">Правила торговой площадки <i>↗</i></a>
+                <a href="https://app.onlyflora.ru/account-deletion/" target="_blank" rel="noopener">Удаление аккаунта и данных <i>↗</i></a>
+              </nav>
+              </div>
+            </details>
+          </div>
+          <div class="product-list" id="productList"></div>
+          <div class="empty-state" id="emptyState" hidden><b>Ничего не нашли</b><p>Проверьте название или отправьте список Егору Григорьевичу.</p><button class="primary-button" type="button" data-route="egor">Подобрать растения</button></div>
+        </div>
+      </section>
+
+      <section class="view" data-view="egor" aria-labelledby="egorTitle" hidden>
+        <div class="assistant-head">
+          <button class="back-button on-green" type="button" data-route="home" aria-label="Назад">←</button>
+          <span class="assistant-avatar">ЕГ</span>
+          <span><h1 id="egorTitle">Егор Григорьевич S</h1><small><i></i> помощник по подбору растений</small></span>
+        </div>
+        <div class="content">
+          <div class="assistant-message">Пришлите фотографию, текст, PDF или Excel. Я разберу список и найду предложения питомников.</div>
+          <label class="upload-card" for="plantFile">
+            <input id="plantFile" type="file" accept="image/*,.pdf,.xlsx,.xls,.csv,.txt">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 16V4m0 0L8 8m4-4 4 4M5 14v5h14v-5"/></svg>
+            <strong id="uploadTitle">Загрузить список или фото</strong>
+            <small id="uploadNote">Фото · PDF · Excel · текст</small>
+          </label>
+          <div class="or-divider"><span>или</span></div>
+          <label class="text-request"><span>Введите список</span><textarea id="plantRequest" rows="5" placeholder="Например: клён сахаристый, 10–12 лет, 3 шт.; лапчатка 50 шт."></textarea></label>
+          <button class="primary-button full" id="startSelection" type="button">Подобрать растения</button>
+          <div class="assistant-note"><b>Важно:</b> возраст, высота, контейнер и обхват сохраняются раздельно. Замены показываются отдельно.</div>
+          <div class="assistant-note">Фото и файлы передаются только для распознавания списка растений. Не загружайте документы с персональными данными. <a href="https://app.onlyflora.ru/privacy/" target="_blank" rel="noopener">Подробнее о защите данных</a>.</div>
+        </div>
+      </section>
+
+      <section class="view" data-view="results" aria-labelledby="resultsTitle" hidden>
+        <div class="page-head"><button class="back-button" type="button" data-route="egor" aria-label="Назад">←</button><h1 id="resultsTitle">Результат подбора</h1><button class="round-button" type="button" aria-label="Скачать">⇩</button></div>
+        <div class="content">
+          <div class="empty-state results-empty" id="resultsEmpty">
+            <span aria-hidden="true">☘</span>
+            <b>Здесь появится готовый подбор</b>
+            <p>Введите список растений — Егор Григорьевич проверит каталог, покажет все подходящие товары и предложения питомников.</p>
+            <button class="primary-button" type="button" data-route="egor">Начать подбор</button>
+          </div>
+          <div id="resultsData" hidden>
+            <div class="summary-card"><span><small>Найдено</small><strong id="resultFound">0 из 0</strong></span><span><small>Поставщиков</small><strong id="resultSuppliers">0</strong></span><span class="summary-total"><small>Итого</small><strong id="resultTotal">0 ₽</strong></span></div>
+            <div class="match-list" id="matchList"></div>
+            <button class="primary-button full" type="button" id="addSelection">Добавить подбор в корзину</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view product-view" data-view="product" aria-labelledby="productTitle" hidden>
+        <div class="product-picture"><button class="back-button floating" type="button" data-route="search" aria-label="Назад">←</button><button class="round-button floating-heart" type="button" aria-label="В избранное">♡</button><img id="productImage" src="/assets/product-placeholder.webp" alt="Клён сахаристый"></div>
+        <div class="product-sheet">
+          <span class="availability" id="productAvailability">Проверяем наличие…</span>
+          <h1 id="productTitle">Клён сахаристый</h1>
+          <p class="latin" id="productLatin">Каталог OnlyFlora</p>
+          <p class="variant-intro">Формы и размеры в одной карточке</p>
+          <section class="form-picker" aria-labelledby="formLabel">
+            <h2 id="formLabel">Форма растения</h2>
+            <div class="form-wheel-frame"><div class="form-wheel-band" aria-hidden="true"><span>✓</span></div><div class="form-wheel" id="formWheel" role="listbox" aria-labelledby="formLabel" aria-describedby="formHint" tabindex="0"></div></div>
+            <p id="formHint">Прокрутите вверх или вниз</p>
+          </section>
+          <div class="variant-fields">
+            <label class="variant-field" for="sizeOptions"><span>Размер</span><select id="sizeOptions" disabled><option>Загрузка…</option></select></label>
+            <label class="variant-field" for="supplyOptions"><span>Корневая система</span><select id="supplyOptions" disabled><option>Загрузка…</option></select></label>
+          </div>
+          <p class="offer-note" id="offerNote" role="status" hidden></p>
+          <h2>Предложения питомников</h2><div class="live-offers" id="liveOffers"><div class="offer-loading">Получаем актуальные цены и остатки…</div></div>
+          <div class="supplier"><span class="supplier-logo" id="supplierLogo">OF</span><span><b id="supplierName">OnlyFlora</b><small id="supplierStock">Проверяем остаток</small></span><span>›</span></div>
+          <div class="product-facts"><span><small>Возраст</small><b id="factAge">не указан</b></span><span><small>Высота</small><b id="factHeight">уточняется</b></span><span><small>Поставка</small><b id="factSupply">уточняется</b></span></div>
+          <a class="source-link" id="sourceProductLink" href="https://onlyflora.ru" target="_blank" rel="noopener">Открыть полную карточку на OnlyFlora.ru ↗</a>
+        </div>
+        <div class="buy-bar"><span class="buy-price"><small id="productPriceLabel">Цена за штуку</small><strong id="productPrice">уточняется</strong></span><div class="product-quantity" aria-label="Количество"><button id="productQtyMinus" type="button" aria-label="Уменьшить количество">−</button><b id="productQuantity">1</b><button id="productQtyPlus" type="button" aria-label="Увеличить количество">+</button></div><button class="primary-button" id="addToCart" type="button">В корзину</button></div>
+      </section>
+
+      <section class="view cart-view" data-view="cart" aria-labelledby="cartTitle" hidden>
+        <div class="page-head"><button class="back-button" type="button" data-route="search" aria-label="Назад">←</button><h1 id="cartTitle">Корзина</h1><span aria-hidden="true"></span></div>
+        <div class="content cart-content">
+          <div class="cart-list" id="cartList"></div>
+          <div class="cart-empty" id="cartEmpty" hidden>
+            <span aria-hidden="true">🌿</span>
+            <b>Корзина пока пуста</b>
+            <p>Выберите растение и конкретное предложение питомника.</p>
+            <button class="primary-button" type="button" data-route="search">Перейти к поиску</button>
+          </div>
+          <div class="cart-summary" id="cartSummary" hidden>
+            <span><small>Товаров</small><b id="cartItemsTotal">0</b></span>
+            <span><small>Сумма</small><strong id="cartPriceTotal">0 ₽</strong></span>
+          </div>
+          <p class="cart-note" id="cartNote" hidden>Доставка рассчитывается при оформлении. Актуальные остатки будут повторно проверены на OnlyFlora.</p>
+          <button class="primary-button full checkout-button" id="checkoutButton" type="button" hidden>Перейти к оформлению</button>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Основная навигация">
+      <button class="is-active" type="button" data-route="home"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-6H9v6H3Z"/></svg><span>Главная</span></button>
+      <button type="button" data-route="search"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg><span>Поиск</span></button>
+      <button class="assistant-nav" type="button" data-route="egor"><i><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 4H4v3M17 4h3v3M7 20H4v-3m13 3h3v-3M8 9h8M8 13h5"/></svg></i><span>Подбор</span></button>
+      <button type="button" data-route="results"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h14"/></svg><span>Результат</span></button>
+      <button type="button" data-route="cart"><span class="cart-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 4h2l2 11h10l3-8H6m2 12h.01M17 19h.01"/></svg><b id="cartBadge" hidden>0</b></span><span>Корзина</span></button>
+    </nav>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script src="/product-model.js?v=1" defer></script>
+  <script src="/app.js?v=36" defer></script>
+</body>
+</html>

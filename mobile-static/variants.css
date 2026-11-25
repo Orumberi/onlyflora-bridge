@@ -1,0 +1,47 @@
+/* Approved first screen. Nursery profile remains unchanged. */
+@font-face{font-family:Montserrat;font-style:normal;font-weight:400;font-display:swap;src:url('/assets/montserrat-regular.ttf') format('truetype')}
+@font-face{font-family:Montserrat;font-style:normal;font-weight:600 800;font-display:swap;src:url('/assets/montserrat-bold.ttf') format('truetype')}
+.product-view{font-family:Montserrat,"Segoe UI",Arial,sans-serif;padding-bottom:190px}
+.product-sheet{padding:20px 18px 28px}
+.product-sheet h1{font-size:1.5rem;line-height:1.25;letter-spacing:-.4px;color:#103d2d}
+.product-sheet h2{font-size:1.125rem;line-height:1.4;margin:24px 0 12px}
+.product-sheet .latin{font-size:1rem;line-height:1.5}
+.variant-intro{margin:8px 0 0;color:var(--muted);font-size:.875rem;line-height:1.5}
+.product-picture.is-placeholder{height:66px;background:#fff;border-bottom:1px solid var(--line)}
+.product-picture.is-placeholder>img,.product-picture.is-placeholder .floating-heart{display:none}
+.product-picture.is-placeholder::after{content:'OnlyFlora';display:block;text-align:center;padding:20px;font-size:1.125rem;font-weight:750;color:var(--green-dark)}
+.product-picture.is-placeholder+.product-sheet{margin-top:0;border-radius:0}
+.form-wheel-frame{position:relative;isolation:isolate;border-radius:22px;overflow:hidden;background:linear-gradient(90deg,#f4f8f5,white 24%,white 76%,#f4f8f5)}
+.form-wheel-frame::before,.form-wheel-frame::after{content:'';position:absolute;z-index:2;left:0;right:0;height:68px;pointer-events:none}
+.form-wheel-frame::before{top:0;background:linear-gradient(#fff,rgba(255,255,255,0))}
+.form-wheel-frame::after{bottom:0;background:linear-gradient(rgba(255,255,255,0),#fff)}
+.form-wheel-band{position:absolute;top:88px;left:0;right:0;height:44px;border-radius:12px;background:#e4f3e8;border-block:1px solid #d6ebdd;pointer-events:none}
+.form-wheel-band>span{position:absolute;right:14px;top:8px;color:var(--green-dark);font-size:22px}
+.form-wheel{position:relative;z-index:1;height:220px;padding-block:88px;overflow-y:auto;overscroll-behavior-y:contain;scroll-snap-type:y mandatory;scrollbar-width:none;touch-action:pan-y;outline-offset:-3px;border-radius:20px}
+.form-wheel::-webkit-scrollbar{display:none}
+.wheel-option{height:44px;display:flex;align-items:center;justify-content:center;padding:0 38px;scroll-snap-align:center;color:#52675c;font-size:1rem;line-height:1.15;text-align:center;cursor:pointer;user-select:none;flex-shrink:0}
+.wheel-option[aria-selected=true]{color:#103d2d;font-weight:750}
+.wheel-loading{height:44px;display:grid;place-items:center;color:var(--muted);font-size:.875rem}
+#formHint{margin:9px 0 24px;text-align:center;font-size:.875rem;color:var(--muted);line-height:1.5}
+.variant-fields{display:grid;gap:10px}
+.variant-field{min-height:52px;display:grid;grid-template-columns:minmax(100px,.9fr) minmax(0,1.3fr);gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(90deg,#f5f9f6,#fff);font-size:.875rem;line-height:1.4}
+.variant-field select{width:100%;min-width:0;min-height:36px;padding:4px 24px 4px 4px;border:0;border-radius:5px;appearance:none;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m5 3 5 5-5 5' fill='none' stroke='%23075f32' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right center/14px;color:#103d2d;font:inherit;font-size:1rem;font-weight:600;text-overflow:ellipsis}
+.variant-field select:disabled{opacity:.55}
+.offer-note{font-size:.875rem;line-height:1.5;color:#77501c;background:#fff7e8;padding:12px;border-radius:10px}
+.product-sheet .live-offer{min-height:90px;padding:14px;gap:12px;border-radius:16px;grid-template-columns:minmax(0,1fr) auto}
+.product-sheet .live-offer b{font-size:1rem;line-height:1.35}
+.product-sheet .live-offer small{font-size:.875rem;line-height:1.5}
+.product-sheet .live-offer>strong{font-size:1rem;white-space:nowrap}
+.product-sheet .offer-loading{font-size:.875rem;line-height:1.5}
+.product-sheet .availability{font-size:.8125rem}
+.product-view .buy-bar{gap:10px;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;padding:12px 16px;min-height:112px}
+.product-view .buy-price{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.product-view .buy-bar small{font-size:.8125rem}
+.product-view .buy-bar strong{font-size:1.25rem;overflow:visible;white-space:normal}
+.product-view .product-quantity{height:46px;grid-template-columns:44px 36px 44px;width:max-content}
+.product-view .product-quantity b,.product-view .buy-bar .primary-button{font-size:1rem}
+.product-view .buy-bar .primary-button{min-height:46px;padding:0 20px}
+.product-view button:focus-visible,.form-wheel:focus-visible,.variant-field select:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+@media(max-width:360px){.product-sheet{padding-inline:14px}.product-sheet .live-offer{grid-template-columns:1fr}.product-sheet .live-offer>strong{justify-self:end}.variant-field{grid-template-columns:1fr}.form-wheel-band>span{right:10px}}
+
+.onlyflora-android-legacy-bottom .product-view{padding-bottom:260px!important}

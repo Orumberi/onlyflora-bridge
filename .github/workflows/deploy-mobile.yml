@@ -10,6 +10,7 @@ on:
       - "downloads/**"
 
 permissions:
+  actions: read
   contents: read
   pages: write
   id-token: write
@@ -58,7 +59,7 @@ jobs:
             if [ -f "mobile-static/$file" ]; then
               cp "mobile-static/$file" "public/$file"
             else
-            curl --fail --location --retry 4 --retry-delay 3 --user-agent "OnlyFlora-Deploy/1.0" "$source_url/$file" -o "public/$file"
+              curl --fail --location --retry 4 --retry-delay 3 --user-agent "OnlyFlora-Deploy/1.0" "$source_url/$file" -o "public/$file"
             fi
           done
 
@@ -75,9 +76,32 @@ jobs:
         with:
           enablement: true
       - name: Upload application
+        id: upload
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Wait for the uploaded archive to be listed
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_ARTIFACT_ID: ${{ steps.upload.outputs.artifact_id }}
+          PAGES_ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          for attempt in {1..12}; do
+            if ids=$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+              -f name="$PAGES_ARTIFACT_NAME" --jq '.artifacts[] | .id'); then
+              if [[ "$ids" == "$PAGES_ARTIFACT_ID" && -n "$ids" ]]; then
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo 'The uploaded Pages archive did not become visible within 60 seconds.' >&2
+          exit 1
       - name: Publish
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
